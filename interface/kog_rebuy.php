@@ -1,0 +1,171 @@
+<?php
+require_once('functions.php'); 
+
+
+
+if (empty($_REQUEST['uid'])) {
+	die("缺少UID");
+}
+
+if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'rebuy') {
+	if(creat_rebuy_info($_REQUEST['uid'])){
+		$url = "kog_detail.php?gid=".$_REQUEST['gid'];
+		echo '<script>alert("Ok Dealer!");location.href="'.$url.'"</script>';
+	}
+}
+$game 			= 	get_game($_REQUEST['gid']);
+$game_player 	= 	get_game_player($_REQUEST['gid']);
+
+foreach ($game_player as $key => $value) {
+	if ($value->uid == $_REQUEST['uid']) {
+		continue;
+	}
+	$game_player_select[$key] = $value;
+	$game_player_select_array[$value->uid] = $value->player;
+}
+
+
+
+
+
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Rebuy!</title>
+	<link rel="stylesheet" type="text/css" href="assets/css/style.css">
+	<link rel="stylesheet" type="text/css" href="assets/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<style type="text/css">
+	a{
+		color: #000;
+	}
+	.cell1-3{
+		float: left;
+		width: 33%;
+		text-align: center;
+	}
+	.row-full{
+		float: left;
+		width: 100%;
+		text-align: center;
+		padding-bottom: 5px;
+	}
+	.row-full-heigh{
+		float: left;
+		width: 100%;
+		text-align: center;
+		padding-bottom: 5px;
+		line-height: 50px;
+	}
+	.row-full-boder-bottom{
+		float: left;
+		width: 100%;
+		text-align: center;
+		padding-bottom: 5px;
+		border-top-style: solid;
+		border-color: #8a8a8a;
+		border-width: 1px
+		padding-right:5px;
+		padding-left: 5px;
+	}
+	.cell1-5{
+		float: left;
+		width: 20%;
+		line-height: 82px;
+	}
+	.cell3-5{
+		float: left;
+		width: 60%;
+	}
+	.content{
+		padding-top: 20px;
+	}
+	.cell1-5-heigh{
+		float: left;
+		width: 20%;
+		line-height:30px;
+	}
+	.cell1-5-heigh{
+		float: left;
+		width: 20%;
+		line-height:30px;
+	}
+</style>
+</head>
+<body>
+	<form method="post">
+		<div class="content">
+			<div class="row-full-heigh">
+				<div class="div-left-40" style="text-align: center;">
+					Rebuyer
+				</div>
+				<div class="div-input-left">
+					<?php _e(get_player($_REQUEST['uid'])[0]->nickname)?>
+				</div>
+			</div>
+			<div class="row-full-heigh">
+				<div class="div-left-40" style="text-align: center;">
+					Killed By
+				</div>
+				<div class="div-input-left" >
+					<?php erp_html_form_input( array(
+                                'name'    => 'killed_by',
+                                'class'   => 'erp-hrm-select2',
+                                'type'    => 'select',
+                                'id'      => 'killed_by',
+                        		'required' => true,
+                                'options' => array( '' => '- Select -' ) + $game_player_select_array
+                            ) ); 
+					?>
+				</div>
+			</div>
+			<div class="row-full-heigh">
+				<div class="div-left-40" style="text-align: center;">
+					Chips
+				</div>
+				<div class="div-input-left">
+					<?php erp_html_form_input( array(
+						'name'    	=> 'chips',
+						'class'   	=> 'div-input-small',
+						'type'    	=> 'text',
+						'required' 	=> 'true',
+						'value' 	=> $game->chips_level,
+					) ); 
+					?>
+				</div>
+			</div>
+			<div class="row-full-heigh">
+				<div class="div-left-40" style="text-align: center;">
+					Paied(￥)
+				</div>
+				<div class="div-input-left">
+					<?php erp_html_form_input( array(
+						'name'    	=> 'paied',
+						'class'   	=> 'div-input-small',
+						'type'    	=> 'text',
+						'placeholder'	=> '￥',
+						'value'		=> $game->rebuy_rate,
+						'required' 	=> 'true',
+					) ); 
+					?>
+				</div>
+			</div>
+			<div style="text-align: center;padding-top: 10px">
+				<?php erp_html_form_input( array(
+					'name'    	=> 'action',
+							// 'help'    	=> '-',
+							// 'value'   	=> isset($_REQUEST['start_time'])?$_REQUEST['start_time']:'',
+					'type'    	=> 'hidden',
+					'value' 	=> 'rebuy',
+				) ); 
+				?>
+				<input type="hidden" name="uid" value="<?php _e($_REQUEST['uid'])?>">
+				<input type="hidden" name="gid" value="<?php _e($_REQUEST['gid'])?>">
+				<input  style="width: 50%;font-size: 1em" type="submit" value="Rebuy">
+			</div>
+		</div>
+	</form>
+</body>
+</html>
