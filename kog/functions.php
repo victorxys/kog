@@ -1795,6 +1795,9 @@ function creat_game(){
 		// 插入盲注级别到 meta表中，用来自动检测
 		insert_game_meta_by_arr($gid,$meta_date);
 	}
+	var_dump($game_data);
+	var_dump($meta_date);
+	exit;
 	return $gid;
 }
 
