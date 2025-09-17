@@ -18,7 +18,7 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: xys131313
     volumes:
-      - db_data:/var/lib/mysql
+      - ./db_data:/var/lib/mysql
       - ./docker/mysql_init:/docker-entrypoint-initdb.d
     ports:
       - "3307:3306"
@@ -33,6 +33,3 @@ services:
       PMA_PORT: 3306
     depends_on:
       - db
-
-volumes:
-  db_data:
