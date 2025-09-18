@@ -234,7 +234,7 @@ $span_style = array(
             </div>
           </div>
       </div>
-  </div>
+  
 
 	    <?php foreach($game_memo_list['memo_games'][$game_memo] as $key=>$value):?>
 	   
@@ -422,7 +422,7 @@ $span_style = array(
         </div>
 		<?php endforeach?>	    
 	      	
-	
+	</div>
 	<div class="content">
 		<div class="col text-center">
 			&nbsp;

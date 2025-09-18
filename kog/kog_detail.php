@@ -1,32 +1,8 @@
-
 <?php
 
 require_once('functions.php'); 
 date_default_timezone_set('Asia/Shanghai');//'Asia/Shanghai'   亚洲/上海
-// echo "<pre>";
-// var_dump ($_REQUEST);
-// exit;
 
-// if(isset($_REQUEST['submit_type'])&&$_REQUEST['submit_type'] == "Delete"){
-// 	$rebuy 			=   get_rebuy_info($_REQUEST['gid']);
-// 	if (!empty($rebuy)) {
-// 		echo '<script>alert("已经有Rebuy数据了，无法删除");</script>';
-// 	}else{
-// 		$update = array(
-// 			'status' 	=>	'0',
-// 			'end_time' 	=>	time(),
-// 		);
-// 		$where 	= array(
-// 			'id' 		=> 	$_REQUEST['gid']a
-// 		);
-// 		// 修改game 状态
-// 		// update_some_table('kog_games',$update,$where);
-// 		// header("Location: index.php"); 
-// 		$url  = "index.php";
-// 		echo '<script>alert("Ok Dealer 删除成功!");location.href="'.$url.'"</script>';
-// 	}
-
-// }
 
 
 
@@ -311,7 +287,7 @@ if (isset($_REQUEST['ending'])) {
 	$show_rank = 'yes';
 }
 // 发送tg消息用
-$text_tel = "======GID-".$gid.":".date('Y-m-d H:i',$game->start_time)."~".$finished_time."======\n";
+$text_tel = "======GID-".$gid.":".date('Y-m-d H:i',$game->start_time)."~".$finished_time."======\\n";
 
 $game_meta	= get_gamemeta($_REQUEST['gid'],null);
 foreach ($game_meta as $key => $value) {
@@ -399,26 +375,21 @@ if (isset($_REQUEST['submit_type'])) {
 		case 'Finish':
 		$total_fact_sum = intval(array_sum($_REQUEST['total_fact']));
 		if ( $total_fact_sum != 0) {
-			// echo "<pre>";
-			// // // echo array_sum($_REQUEST['total_fact']);
-			// // var_dump( $_REQUEST['total_fact'][4] + $_REQUEST['total_fact'][2] + $_REQUEST['total_fact'][3]+$_REQUEST['total_fact'][1] + 0);
-			// // // echo $_REQUEST['total_fact'][2];
-			// // // echo $_REQUEST['total_fact'][3];
-			// // var_dump(floatval($_REQUEST['total_fact'][4]));
-			// // var_dump($_REQUEST['total_fact'][3]);
-			// // var_dump($_REQUEST['total_fact'][2]);
-			// // var_dump($_REQUEST['total_fact'][1]);
-			// var_dump(intval(array_sum($_REQUEST['total_fact'])));
-			// exit;
-
-			// echo "[Get in Fact]错误，各位玩家合计应为“0”，请确认后重新输入";
 			echo '
 				<script type="text/javascript">
-					swal({
-					        title:"数值错误",
-					        icon:"error",
-					        text: "Get in Fact 中填写的正、负合计应为0",
-					    })
+				document.addEventListener("DOMContentLoaded", function() {
+					Swal.fire({
+						title: "数值错误",
+						text: "筹码结算不正确",
+						icon: "error",
+						timer: 2000,
+						timerProgressBar: true,
+						showConfirmButton: false
+					}).then((result) => {
+						/* 定时器结束后或者用户意外关闭弹窗后都会跳转 */
+						window.location.href = ' . json_encode($url) . ';
+					});
+				});
 				</script>
 			';
 			break;
@@ -453,15 +424,22 @@ if (isset($_REQUEST['submit_type'])) {
 				$new_gid = clone_game($_REQUEST['gid']);
 				$url = "kog_detail.php?page_name=Have Fun !&gid=".$new_gid;
 			}
+
 			echo '
 				<script type="text/javascript">
-					swal({
-					        title:"Well Done",
-					        icon:"success",
-					        text: "See you next game!",
-					    }).then(function () {
-					        window.location.href = "'.$url.'"
-					    })
+				document.addEventListener("DOMContentLoaded", function() {
+					Swal.fire({
+						title: "Well Done",
+						text: "即将开始下一局游戏...",
+						icon: "success",
+						timer: 2000,
+						timerProgressBar: true,
+						showConfirmButton: false
+					}).then((result) => {
+						/* 定时器结束后或者用户意外关闭弹窗后都会跳转 */
+						window.location.href = ' . json_encode($url) . ';
+					});
+				});
 				</script>
 			';
 			break;
@@ -469,7 +447,18 @@ if (isset($_REQUEST['submit_type'])) {
 		case 'Delete':
 		$rebuy 			=   get_rebuy_info($_REQUEST['gid']);
 		if (!empty($rebuy)) {
-			echo '<script>swal("已经有Rebuy数据了，无法删除");</script>';
+			echo '
+			<script>
+			document.addEventListener("DOMContentLoaded", function() {
+				Swal.fire({
+					title: "无法删除",
+					text: "已经有Rebuy数据了，无法删除。",
+					icon: "error",
+					confirmButtonText: "好的"
+				});
+			});
+			</script>
+			';
 		}else{
 			$update = array(
 				'status' 	=>	'0',
@@ -482,15 +471,23 @@ if (isset($_REQUEST['submit_type'])) {
 		update_some_table('kog_games',$update,$where);
 		// header("Location: index.php"); 
 			$url  = "index.php";
-			echo '<script>
-				swal({
-					        title:"Deleted",
-					        icon:"success",
-					        text: "See you next game!",
-					    }).then(function () {
-					        window.location.href = "'.$url.'"
-					    })
-			</script>';
+			echo '
+				<script type="text/javascript">
+				document.addEventListener("DOMContentLoaded", function() {
+					Swal.fire({
+						title: "Deleted",
+						text: "See you next game!",
+						icon: "success",
+						timer: 2000,
+						timerProgressBar: true,
+						showConfirmButton: false
+					}).then((result) => {
+						/* 定时器结束后或者用户意外关闭弹窗后都会跳转 */
+						window.location.href = ' . json_encode($url) . ';
+					});
+				});
+				</script>
+			';
 
 		}
 		break;
@@ -499,13 +496,19 @@ if (isset($_REQUEST['submit_type'])) {
 				$url = "kog_detail.php?page_name=Have Fun !&gid=".$new_gid;
 			echo '
 				<script type="text/javascript">
-					swal({
-					        title:"Well Done",
-					        icon:"success",
-					        text: "See you next game!",
-					    }).then(function () {
-					        window.location.href = "'.$url.'"
-					    })
+				document.addEventListener("DOMContentLoaded", function() {
+					Swal.fire({
+						title: "Well Done",
+						text: "See you next game!",
+						icon: "success",
+						timer: 2000,
+						timerProgressBar: true,
+						showConfirmButton: false
+					}).then((result) => {
+						/* 定时器结束后或者用户意外关闭弹窗后都会跳转 */
+						window.location.href = ' . json_encode($url) . ';
+					});
+				});
 				</script>
 			';
 			break;
@@ -836,6 +839,7 @@ if ($straddle_time!="") {
 			          <div class="row">
 			            <div class="col-6">
 			              <h3 class="mb-0">Final Count</h3>
+                          <span id="total-chips-value" style="display: none;"><?php echo $total_chips; ?></span>
 			            </div>
 			          </div>
 			        </div>
@@ -869,15 +873,15 @@ if ($straddle_time!="") {
 										<div class="div-input-left-end" >
 											<?php
 											$rebuy_sum 		= isset($rebuy_real[$val->uid]['rebuy_chips'])?$rebuy_real[$val->uid]['rebuy_chips']:'0';
-											$function_sum 	= "onkeyup =\"value=value.replace(/[^\d\.]/g,'');SumNum(this.value,".$rebuy_sum.",".$val->uid.");\"";
+											// $function_sum 	= "onkeyup =\\\"value=value.replace(/[^\\d\\.]/g,'');SumNum(this.value,".$rebuy_sum.",".$val->uid.");\\\"";
 											?>
 											<?php erp_html_form_input( array(
 												'name'    	=> 'ending['.$val->uid.']',
-												'id' 		=> 'end_chips['.$val->uid.']',
-												'value'   	=> isset($_REQUEST['ending'][$val->uid])?$_REQUEST['ending'][$val->uid]:'',
-												'class'   	=> 'form-control form-control-sm',
+												'id' 		=> 'end_chips_'.$val->uid,
+												'value'   	=> isset($_REQUEST['ending'][$val->uid]) ? $_REQUEST['ending'][$val->uid] : ($rebuy_sum > 0 ? $rebuy_sum : ''),
+												'class'   	=> 'form-control form-control-sm final-chip-input',
 												'type'    	=> 'text',
-												'function' 	=> $function_sum,
+												// 'function' 	=> $function_sum,
 												// 'required' 	=> 'true',
 												'readonly'	=> $disabled,
 											) ); 
@@ -927,147 +931,23 @@ if ($straddle_time!="") {
 			    	</div>
 				<div class="row-full-bottom">&nbsp</div>
 				</form>
+				<!-- New Delete Button Form -->
+				<?php if($game->status == 1): ?>
+				<form method="post" onsubmit="return confirm('你确定要删除这场游戏吗？这会清除所有相关数据！');">
+					<input type="hidden" name="gid" value="<?php echo $_REQUEST['gid']; ?>">
+					<div class="row mt-3">
+						<div class="col-md-12">
+							<button type="submit" class="btn btn-danger btn-lg btn-block" name="submit_type" value="Delete">Delete This Game</button>
+						</div>
+					</div>
+				</form>
+				<?php endif; ?>
 				<?php if(isset($show_rank)&&$show_rank=='yes'):?>
 				<form method="post">
 			
 				<?php foreach ($user_final_rank as $key=>$val):?>
 				
-				<?php 
-					
-					
-				/**
-				<div class="card">
-					<div class="card-header">
-					13	
-					</div>
-					<div class="card-body">
-						
-						
-						<div class="row-full" style="text-align: left;padding-right: 20px">#<a href="user_detail.php?uid=<?php _e($key)?>&gid=<?php _e($_REQUEST['gid'])?>"><?php _e($val['rank'].":".$player_name[$key])?></a>
-								<?php if(isset($game_meta)):?>
-									
-									<?php foreach($game_meta as $k=>$v):?>
-										<?php if($v->meta_value == $val['uid']):?>
-											<div class="div-tag"><?php echo(get_honor_title_arr()[$v->meta_key])?></div>
-										<?php endif?>
-									<?php endforeach?>
-									
-								<?php endif?>
-						</div>
-							<div class="row-full">
-								<div class="div-1-4-title">Start Chips</div>
-								<div class="div-1-4-content"><?php _e($player_start_chips[$key])?></div>
-								<div class="div-1-4-title">End Chips</div>
-								<div class="div-1-4-content"><?php _e($val['end_chips'])?></div>
-							</div>
-							<div class="row-full">
-								<div class="div-1-4-title">Rebuy</div>
-								<div class="div-1-4-content"><?php _e($val['rebuy'])?></div>
-								<div class="div-1-4-title">Cost</div>
-								<div class="div-1-4-content">￥<?php _e($val['paied'])?></div>
-							</div>
-							<div class="row-full">
-								<div class="div-1-4-title">&nbsp</div>
-								<div class="div-1-4-content">&nbsp</div>
-								<div class="div-1-4-title">Pay back</div>
-								<div class="div-1-4-content">￥<?php _e($val['pay_back'])?></div>
-							</div>
-							<div class="row-full">
-								Final Chips: <?php _e($val['count_chips'])?>
-							</div>
-							<div class="row-full"><!-- 结账金额 -->
-								<div class="div-1-4-title">Bonus</div>
-								<div class="div-1-4-content"><span>￥<?php _e(hmtl_if_negative($val['bonus']))?></span></div>
-								<?php
-								if (strtoupper($game->game_type) == "CASH" || is_null($game->game_type)) {
-									if ($val['count_chips'] - $game->chips_level > 0) {
-										$if_win = "Win: ";
-									}else{
-										$if_win = "Lose: ";
-									}
-									$win_total_should =$if_win.hmtl_if_negative(($val['count_chips'] - $game->chips_level)/($game->chips_level/$game->rebuy_rate));
-								}
-								else{
-									if ($val['bonus'] >0) {
-										$if_win = "Win: ";
-										$win_total_should = $if_win.hmtl_if_negative(($val['bonus']+$val['reward']));
-									}else{
-										$if_win = "Lose: ";
-										$win_total_should = $if_win.hmtl_if_negative(($val['bonus']+$val['pay_out']));
-									}
-								}
-								?>
-								<?php if($val['bonus']<=0):?>
-									<div class="div-1-4-title">Pay out</div>
-									<div class="div-1-4-content"><span>￥<?php _e(hmtl_if_negative($val['pay_out']))?></span></div>
-									<?php $win=$win_total_should;
-									$total_should = $val['bonus']+$val['pay_out'];
-									?>
-								<?php endif?>
-								<?php if($val['bonus']>0):?>
-									<div class="div-1-4-title">Extra Reward</div>
-									<div class="div-1-4-content"><span>￥<?php _e($val['reward'])?></span></div>
-									<?php 
-									$win=$win_total_should;
-									$total_should = $val['bonus']+$val['reward'];
-									?>
-								<?php endif?>
-								<?php
-								// 根据 Gametype 是现金桌CASH 就直接用筹码算，是SNG就按排位的Bouns 算
-								if (strtoupper($game->game_type) == "CASH" || is_null($game->game_type)) {
-									$total_should = ($val['count_chips'] - $game->chips_level)/($game->chips_level/$game->rebuy_rate);
-								}
-								else{
-
-								}						
-								$total_fact_view = isset($total_fact[$key])?$total_fact[$key]:$total_should;
-								$total_fact_html = isset($total_fact[$key])?"<div class='row-full'>(实际：".$total_fact[$key].")</div>":'';
-								?>
-								<div class="div-1-4-title">&nbsp</div>
-								<div class="div-1-4-content">Get in Fact</div>
-								
-								<div class="div-1-4-title">
-									<?php erp_html_form_input( array(
-										'name'    	=> 'total_fact['.$key.']',
-										'id' 		=> 'total_fact['.$key.']',
-										'value'   	=> $total_fact_view,
-										'class'   	=> 'div-input-small',
-										'type'    	=> 'text',
-									// 'function' 	=> $function_sum, // 禁止输入负值
-										'required' 	=> 'true',
-										'readonly'	=> $disabled,
-									) ); 
-									?>
-								</div>
-								<input type="hidden" name="total_should[<?php _e($key)?>]" value ="<?php _e($total_should)?>">
-								<div class="div-1-4-content">&nbsp</div>
-								<div class="row-full-win" style="font-size: 1.5em;"><?php _e($win.$total_fact_html)?></div>
-								<div class="row-full">
-									<div class="div-1-4-title">Kill &nbsp</div>
-									<div class="div-1-4-title" style="width: 35%; text-align: left;">
-
-										<?php
-										if (!empty($killed_arr[$key])) {
-											echo count($killed_arr[$key])."（";
-											$kill_person = "";
-											foreach ($killed_arr[$key] as $k => $v) {
-												$kill_person 	= empty($kill_person)?$player_name[$v]:$kill_person."、".$player_name[$v];
-											}
-											echo $kill_person."）";
-										} else {
-											echo "0";
-										}
-										?>
-									</div>
-									<div class="div-1-2" style="width: 40%; text-align:left;color: #ccc"></div>
-								</div>
-
-								<div class="row-full-bottom"></div>
-							</div>
-						
-					</div><!-- card-body -->
-				</div>
-				注释用**/?>
+				
 
 				<div class="card card-profile">
 					<div class="card-header">
@@ -1140,9 +1020,9 @@ if ($straddle_time!="") {
 								?>
 								<?php if($val['bonus']<=0):?>
 									 <div>
-				                      <span class="heading">￥<?php _e(hmtl_if_negative($val['pay_out']))?></span>
-				                      <span class="description">Pay out</span>
-				                    </div>
+		                      <span class="heading">￥<?php _e(hmtl_if_negative($val['pay_out']))?></span>
+		                      <span class="description">Pay out</span>
+		                    </div>
 									
 									<?php $win=$win_total_should;
 									$total_should = $val['bonus']+$val['pay_out'];
@@ -1150,9 +1030,9 @@ if ($straddle_time!="") {
 								<?php endif?>
 								<?php if($val['bonus']>0):?>
 									<div>
-				                      <span class="heading">￥<?php _e($val['reward'])?></span>
-				                      <span class="description">Extra Reward</span>
-				                    </div>
+		                      <span class="heading">￥<?php _e($val['reward'])?></span>
+		                      <span class="description">Extra Reward</span>
+		                    </div>
 									
 									<?php 
 									$win=$win_total_should;
@@ -1217,7 +1097,7 @@ if ($straddle_time!="") {
 		              </div>
 		              <?php
 		              // 拼消息通知 谁付给谁多少
-		              	$text_tel .= "#".$val['rank'].":".$player_name[$key]."->".$get_money."\n";
+		              	$text_tel .= "#".$val['rank'].":".$player_name[$key]."->".$get_money."\\n";
 		              ?>
 		              
 		              <?php endif?>
@@ -1285,7 +1165,6 @@ if ($straddle_time!="") {
 									
 									<div class="text-center">
 							
-											<button type="submit" class="btn btn-secondary btn-lg" name="submit_type" value="Delete">Delete</button>
 											
 											<button type="submit" class="btn btn-secondary btn-lg" name="submit_type" value="finish&clone">Finish & Clone</button>
 
@@ -1322,24 +1201,85 @@ if ($straddle_time!="") {
 
 if ($game->status == 0) {
     // 弹出SweetAlert2提示框
-    echo "
-    <script>
-        Swal.fire({
-            title: '游戏已删除',
-            text: '无法查看',
-            icon: 'warning',
-            confirmButtonText: '确定'
-        }).then((result) => {
-            // 点击确定后返回index.php页面
-            window.location.href = 'index.php';
-        });
-    </script>
-    ";
+	echo '
+				<script type="text/javascript">
+				document.addEventListener("DOMContentLoaded", function() {
+					Swal.fire({
+						title: "游戏已删除",
+						text: "无法查看，即将返回首页",
+						icon: "error",
+						timer: 2000,
+						timerProgressBar: true,
+						showConfirmButton: false
+					}).then((result) => {
+						/* 定时器结束后或者用户意外关闭弹窗后都会跳转 */
+						window.location.href = ' . json_encode($url) . ';
+					});
+				});
+				</script>
+			';
 }
 ?>
 		
 
-			
+<script>
+$(document).ready(function() {
+    var totalChips = parseInt($('#total-chips-value').text());
+    if (isNaN(totalChips)) {
+        console.error("无法读取总筹码量。");
+        return;
+    }
+
+    var inputs = $('.final-chip-input');
+    var autoCalculatedField = null; // 用来“记住”被自动计算的输入框
+
+    inputs.on('input', function() {
+        var currentInput = $(this);
+
+        // 如果用户正在修改的，就是之前被自动计算的那个框，
+        // 那么就把它“释放”，变回手动框，并清空我们的“记忆”。
+        if (autoCalculatedField && currentInput.is(autoCalculatedField)) {
+            autoCalculatedField = null;
+        }
+
+        var sumOfEntered = 0;
+        var emptyInputs = [];
+        var filledCount = 0;
+
+        inputs.each(function() {
+            var val = $(this).val();
+            if (val !== '' && !isNaN(parseInt(val))) {
+                sumOfEntered += parseInt(val);
+                filledCount++;
+            } else {
+                emptyInputs.push($(this));
+            }
+        });
+
+        // 场景一：有一个被“记住”的自动框，我们就更新它。
+        // (前提是用户没有正在修改它)
+        if (autoCalculatedField) {
+            var sumOfManual = 0;
+            inputs.not(autoCalculatedField).each(function() {
+                 var val = $(this).val();
+                 if (val !== '' && !isNaN(parseInt(val))) {
+                    sumOfManual += parseInt(val);
+                 }
+            });
+            var newVal = totalChips - sumOfManual;
+            autoCalculatedField.val(newVal);
+        }
+        // 场景二：没有“记住”的框，但现在正好只剩一个空框了。
+        // 这是第一次触发自动计算的条件。
+        else if (emptyInputs.length === 1) {
+            var targetField = emptyInputs[0];
+            var newVal = totalChips - sumOfEntered;
+            targetField.val(newVal);
+            autoCalculatedField = targetField; // “记住”我们刚刚填充的这个框
+        }
+    });
+});
+</script>
 			
 		</body>
 		</html>
