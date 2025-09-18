@@ -26,6 +26,7 @@ if ( wp_using_themes() ) {
 if ( 'HEAD' === $_SERVER['REQUEST_METHOD'] && apply_filters( 'exit_on_http_head', true ) ) {
 	exit();
 }
+
 // Process feeds and trackbacks even if not using themes.
 if ( is_robots() ) :
 	/**
@@ -42,6 +43,7 @@ elseif ( is_trackback() ) :
 	include( ABSPATH . 'wp-trackback.php' );
 	return;
 endif;
+
 if ( wp_using_themes() ) :
 	$template = false;
 	if ( is_embed() && $template = get_embed_template() ) :
@@ -65,7 +67,6 @@ if ( wp_using_themes() ) :
 	else :
 		$template = get_index_template();
 	endif;
-
 	/**
 	 * Filters the path of the current template before including it.
 	 *

@@ -28,29 +28,30 @@ $game_memo = null;
 
 //日期格式 20181001
 $this_year = isset($_REQUEST['y'])?$_REQUEST['y']: date('Y');
-// $this_year = "2018";
-$month_date = "0101";//拼个月日
-// $start_date = $this_year.$month_date;
+$month_date = "0101";
+
 if (!empty($_REQUEST['md'])) {
-	// $month_date = $_REQUEST['md'];
-	$game_memo = $_REQUEST['md'];
-}else{
-	$_REQUEST['md']=null;
-}
-if (isset($_REQUEST['start_time'])){
-	if ($_REQUEST['start_time'] == 'all') {
-		$start_time = "20180101";
-	}else{
-		$start_time = $_REQUEST['start_time'];
-	}
-}else{
-	$start_time = $this_year.$month_date;
-	
+    // 如果指定了牌局ID (md)，则清空其他时间筛选条件
+    $game_memo = $_REQUEST['md'];
+    $start_time = null;
+    $end_time = null;
+    $this_year = substr($game_memo, 0, 4); // 从牌局ID中提取年份
+} else {
+    // 否则，使用默认的或指定的日期范围
+    $game_memo = null;
+    if (isset($_REQUEST['start_time'])){
+        if ($_REQUEST['start_time'] == 'all') {
+            $start_time = "20180101";
+        }else{
+            $start_time = $_REQUEST['start_time'];
+        }
+    }else{
+        $start_time = $this_year.$month_date;
+    }
+    $end_time = isset($_REQUEST['end_time'])?$_REQUEST['end_time']:$this_year."1231";
 }
 
-// get_cost($game_memo);
-// 几乎用不到结束日期，暂时注释掉，只有选看某一年后某一段时间的数据时，才用到结束时间。
-$end_time = isset($_REQUEST['end_time'])?$_REQUEST['end_time']:$this_year."1231";
+
 // $end_time = null;
 $time_zone_str = "&start_time=".$start_time."&end_time=".$end_time;
 $time_zone_start = isset($_REQUEST['start_time'])?$_REQUEST['start_time']:$this_year.$month_date;
@@ -72,6 +73,7 @@ $game_type_info = game_type_array($game_type);
 // var_dump($game_memo);
 // exit;
 $top_10 = get_top_10(array('status'=>2,'start_time'=>$start_time,'memo'=>$game_memo,'end_time'=>$end_time,'game_type'=>$game_type,'order_type'=>'total_fact'));
+
 $game = get_game_by_args(array('status'=>2,'start_time'=>$start_time,'memo'=>$game_memo,'end_time'=>$end_time,'game_type'=>$game_type));
 if (empty($game)) {
 	$if_data 	= 0;
@@ -262,8 +264,10 @@ switch ($_REQUEST['type']) {
 	case 'killrank':
 	$kill_rank 	=	get_best_killer($game_memo,$start_time,$end_time,$game_type);
 	$kill_info 	=	get_kill_info($game_memo,$start_time,$end_time,$game_type);
-	$kill_info_killed_by = $kill_info['killed_by'];
-	$kill_info = $kill_info['killed'];
+    $kill_info_killed_by = isset($kill_info['killed_by']) ? $kill_info['killed_by'] : array();
+    $kill_info = isset($kill_info['killed']) ? $kill_info['killed'] : array();
+	$killed_by_tem = array();
+    $kill_graph = array();
 	if (is_array($kill_rank) and is_array($kill_info_killed_by)) {
 		$i = 0;
 		foreach ($kill_rank as $key => $value) {
@@ -473,16 +477,10 @@ switch ($_REQUEST['type']) {
 
 			default:
 			$total_income	=	get_player_total_income_stat($game_memo,$start_time,$end_time,$game_type);
-			// $data_total =	json_encode($total_income['total']);
 			$data 			= 	$total_income['income'];
 			$statTime 		=	$total_income['date'];
 			$rows = count($statTime);
-			// echo "<pre>";
-			// var_dump ($total_income);
-			// exit;
-			// break;
 		}
-		// 动态设置 详情试图的高度
 		$rows = isset($rows)?$rows:5;
 		$detail_heigh = 180+$rows*30;
 		$url = "kog_detail.php?gid=";
@@ -496,37 +494,20 @@ switch ($_REQUEST['type']) {
 			<meta charset="UTF-8">
 			<title>Big Data</title>
 			<link rel="stylesheet" type="text/css" href="assets/css/style.css">
-			<!-- <link rel="stylesheet" type="text/css" href="assets/css/bootstrap.min.css"> -->
 			<link rel="stylesheet" type="text/css" href="style.css">
-			<!-- <script type="text/javascript" src="assets/js/flot/jquery-1.8.3.min.js"></script> -->
-			<!-- <script type="text/javascript" src="assets/js/flot/highcharts.js"></script>
-			<script type="text/javascript" src="assets/js/flot/exporting.js"></script>
-			<script type="text/javascript" src="assets/js/flot/highcharts-more.js"></script>
-			<script type="text/javascript" src="assets/js/flot/highcharts-zh_CN.js"></script> -->
-			
-			
-			<!-- <script type="text/javascript" src="https://code.highcharts.com.cn/highcharts/highcharts.js"></script> -->
 			<script type="text/javascript" src="https://code.hcharts.cn/10.3.2/highcharts.js"></script>
-
-			<!-- <script type="text/javascript" src="https://code.highcharts.com.cn/highcharts/modules/exporting.js"></script> -->
 			<script type="text/javascript" src="https://code.hcharts.cn/10.3.2/modules/exporting.js"></script>
 			<script type="text/javascript" src="https://code.hcharts.cn/10.3.2/modules/sankey.js"></script>
 			<script type="text/javascript" src="https://code.hcharts.cn/10.3.2/modules/oldie.js"></script>
-			<script type="text/javascript" src="assets/js/flot/highcharts-more.js"></script>
+			<script type="text/javascript" src="https://code.hcharts.cn/10.3.2/highcharts-more.js"></script>
 			<script type="text/javascript" src="https://code.hcharts.cn/highcharts/modules/drilldown.js"></script>
 			<script type="text/javascript" src="assets/js/flot/highcharts-zh_CN.js"></script>
 
-			<!-- 表格显示 -->
-			
-
-			<!--  jQuery v3.0.0-beta1 -->
 			<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-beta1/jquery.js"></script>
 
-			<!-- JS Pluging -->
 			<script type='text/javascript' src='https://s3.amazonaws.com/dynatable-docs-assets/js/jquery.dynatable.js'></script>
 			<script src="https://code.hcharts.cn/highcharts/modules/dependency-wheel.js"></script>
 			
-			<!-- 表格显示 -->
 			<script type="text/javascript">
 				console.log($().jquery); // => '3.0.0'
 				var $jq = jQuery.noConflict(true);
@@ -702,9 +683,6 @@ switch ($_REQUEST['type']) {
 			$total_cost += $order_array[$value['uid']]['game_cost_player'];
 		}
 		arsort($total_income_order);
-		// echo "<pre>";
-		// var_dump($total_income_order);
-		// var_dump ($total_income_order);
 		foreach ($total_income_order as $key => $value) {
 			if ($value >= 0) {
 				$user_should_win[$key]['should_get'] = $value;
@@ -713,51 +691,23 @@ switch ($_REQUEST['type']) {
 				$user_should_lose[$key] = $value;
 			}
 		}
-		// ==========支付关系========
-		// 支付关系
-		// foreach ($kill_info_killed_by as $k => $val) {
-		// 	foreach ($val as $m => $v) {
-		// 		// 按 from to value (谁输给谁多少)的顺序组建数组，便于转json数组
-		// 		$kill_graph[] = array(get_player($k)[0]->nickname,get_player($m)[0]->nickname,$v);
-		// 	}
-		
 		arsort($user_should_win);
 		ksort($user_should_lose);
-		// sort($user_should_lose); // 对输钱的进行 升序排序，输最多的在前面
-		// echo "<pre>";
 
-		// var_dump($user_should_win);
-		// var_dump($user_should_lose);
-		// exit;
-
-
-		// 对赢钱的进行降序排序，赢最多的在前面 
-		// 赢钱数组是二维数组，按此排序
-		// array_multisort(array_column($user_should_win,'should_get'),SORT_DESC,$user_should_win);
-		// sort($user_should_lose); // 对输钱的进行 升序排序，输最多的在前面
-
-		// 按输了的金额进行遍历
 		foreach ($user_should_lose as $key => $value) {
 			$lose_id = $key;
 			$lose = $value;
 			foreach ($user_should_win as $k => $val) {
-				// A输的金额 和 每个赢的金额相加
 				$lose_should = $val['should_get']+$lose;
-				// 如果相加结果（如B）大于0代表 此A输的够支付B的钱
 				if ($lose_should >= 0) {
-					// A 支付给 B  B赢的钱
 					$should_get[$lose_id][$k]['get']=abs($lose);
-					// B 赢了 A 的一部分钱
 					$user_should_win[$k]['get']=abs($lose);
 					$should_get[$lose_id][$k]['should_get']=$lose_should;
 					$user_should_win[$k]['should_get'] = $lose_should;
 					$lose=0;
-					// A 支付完 B 的，用A的剩余金额再遍历一次，和C赢的钱对比
 					break;
 				}else{
-					// 直到 A 输的钱不够支付某一个人（如D）
 					$should_get[$lose_id][$k]['get']=$val['should_get'];
-					// 将A 剩余的前先给D ，在经过上面的循环 用第二个输钱的人A’ 的钱再遍历一遍
 					$user_should_win[$k]['get']=$val['should_get'];
 					$should_get[$lose_id][$k]['should_get']=0;
 					$user_should_win[$k]['should_get']=0;
@@ -771,11 +721,6 @@ switch ($_REQUEST['type']) {
 			}
 		}
 		$pay_info_graph_json = json_encode($pay_info_graph);
-		// 	var_dump($kill_graph);
-		// 	echo "<pre>";
-		// 	var_dump($pay_info_graph);
-		// 	// ==========支付关系========
-		// 	exit;
 		}
 	?>
 
@@ -855,1642 +800,1151 @@ switch ($_REQUEST['type']) {
 		var gameTypeInfo 		= 	<?php echo json_encode($game_type_info)?>;
 		var killGraph 		= 	<?php echo json_encode($kill_graph)?>;
 		var payInfoGraph 		= 	<?php echo json_encode($pay_info_graph)?>;
-		// console.log(payInfoGraph);
+		
 		$(function (){
-			$('#container-fuqian').highcharts({
-				title: {
-				text: 'Pay to Info'
-				},
-				credits: {
-					enabled: false
-				},
-				series: [{
-					keys: ['from', 'to', 'weight'],
-					data: payInfoGraph,
-					type: 'dependencywheel',
-					name: '支付详情',
-					dataLabels: {
-						color: '#333',
-						textPath: {
-							enabled: true,
-							attributes: {
-								dy: 5
-							}
-						},
-						distance: 10
-					},
-					size: '95%'
-				}]
-			});
-		});
-		$(function (){
-			$('#container-hexuan').highcharts({
-				title: {
-				text: 'All in 胜负关系'
-				},
-				credits: {
-					enabled: false
-				},
-				series: [{
-					keys: ['from', 'to', 'weight'],
-					data: killGraph,
-					type: 'dependencywheel',
-					name: 'All in 输给了谁 ',
-					dataLabels: {
-						color: '#333',
-						textPath: {
-							enabled: true,
-							attributes: {
-								dy: 5
-							}
-						},
-						distance: 10
-					},
-					size: '95%'
-				}]
-			});
-		});
-
-		$(function () {
-			$('#container-timesadd').highcharts({
-				colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
-				chart: {
-					type: 'spline'
-				},
-				title: {
-					text: ''
-				},
-				subtitle: {
-					text: ''
-				},
-				xAxis: {
-					categories: totalTimesAddUserDate,
-					labels: {
-						overflow: 'justify'
-					}
-				},
-				yAxis: {
+			if ($('#container-fuqian').length) {
+				$('#container-fuqian').highcharts({
 					title: {
-						text: false
+					text: 'Pay to Info'
 					},
-				// min: false,
-				minorGridLineWidth: 0,
-				gridLineWidth: 0,
-				alternateGridColor: null,
-			},
-			tooltip: {
-				valueSuffix: '元'
-			},
-			credits: {
-				enabled: false
-			},
-			plotOptions: {	
-				spline: {
-					lineWidth: 4,
-					states: {
-						hover: {
-							lineWidth: 5
-						}
-					},
-					marker: {
+					credits: {
 						enabled: false
 					},
-					// pointInterval: 3600000, // one hour
-					// pointStart: Date.UTC(2009, 9, 6, 0, 0, 0)
-				}
-			},
-// 			plotLines: [{
-
-//          color: ['#111111', '#222222', '#333333', '#555555', '#666666', '#777777', '#888888', 
-// '#999999', '#000000']
-//       }],
-			series: totalTimesAddUser,
-
-			navigation: {
-				menuItemStyle: {
-					fontSize: '10px'
-				}
+					series: [{
+						keys: ['from', 'to', 'weight'],
+						data: payInfoGraph,
+						type: 'dependencywheel',
+						name: '支付详情',
+						dataLabels: {
+							color: '#333',
+							textPath: {
+								enabled: true,
+								attributes: {
+									dy: 5
+								}
+							},
+							distance: 10
+						},
+						size: '95%'
+					}]
+				});
 			}
 		});
-		});
-
-		$(function () {
-			$('#container-timeswinrateadd').highcharts({
-				colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
-				chart: {
-					type: 'spline'
-				},
-				title: {
-					text: ''
-				},
-				subtitle: {
-					text: ''
-				},
-				xAxis: {
-					categories: userTimesWinRateUserDate,
-					labels: {
-						overflow: 'justify'
-					}
-				},
-				yAxis: {
+		$(function (){
+			if ($('#container-hexuan').length) {
+				$('#container-hexuan').highcharts({
 					title: {
-						text: false
+					text: 'All in 胜负关系'
 					},
-				// min: false,
-				minorGridLineWidth: 0,
-				gridLineWidth: 0,
-				alternateGridColor: null,
-			},
-			tooltip: {
-				valueSuffix: '%'
-			},
-			credits: {
-				enabled: false
-			},
-			plotOptions: {	
-				spline: {
-					lineWidth: 4,
-					states: {
-						hover: {
-							lineWidth: 5
-						}
-					},
-					marker: {
+					credits: {
 						enabled: false
 					},
-					// pointInterval: 3600000, // one hour
-					// pointStart: Date.UTC(2009, 9, 6, 0, 0, 0)
-				}
-			},
-			series: userTimesWinRateUser,
-			
-			navigation: {
-				menuItemStyle: {
-					fontSize: '10px'
-				}
+					series: [{
+						keys: ['from', 'to', 'weight'],
+						data: killGraph,
+						type: 'dependencywheel',
+						name: 'All in 输给了谁 ',
+						dataLabels: {
+							color: '#333',
+							textPath: {
+								enabled: true,
+								attributes: {
+									dy: 5
+								}
+							},
+							distance: 10
+						},
+						size: '95%'
+					}]
+				});
 			}
 		});
-		});
 
 		$(function () {
-			$('#container').highcharts({
-				colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac','#ffcc00','#ff9900'],
-				chart: {
-				// type: 'column'
-				type: 'bar'
-			},
-			title: {
-				text: ''
+			if ($('#container-timesadd').length) {
+				$('#container-timesadd').highcharts({
+					colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
+					chart: {
+						type: 'spline'
+					},
+					title: {
+						text: ''
+					},
+					subtitle: {
+						text: ''
+					},
+					xAxis: {
+						categories: totalTimesAddUserDate,
+						labels: {
+							overflow: 'justify'
+						}
+					},
+					yAxis: {
+						title: {
+							text: false
+						},
+					minorGridLineWidth: 0,
+					gridLineWidth: 0,
+					alternateGridColor: null,
+					},
+					tooltip: {
+						valueSuffix: '元'
+					},
+					credits: {
+						enabled: false
+					},
+					plotOptions: {	
+						spline: {
+							lineWidth: 4,
+							states: {
+								hover: {
+									lineWidth: 5
+								}
+							},
+							marker: {
+								enabled: false
+							},
+						}
+					},
+					series: totalTimesAddUser,
 
-			},
-			subtitle: {
-				text: ''
-			},
-			xAxis: {
-				// categories: ['1','2','3','4','5','6','7']
-				categories: statTimej,
-				labels: {
-					// rotation: -45,
-				},
-				stackLabels: {
-					enabled: true,
-					style: {
-						fontWeight: 'bold',
-						color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
-					}
-				}
-			},
-			yAxis: {
-				// min: -1000,
-				title: {
-					enabled: false,
-					text: false
-				}
-			},
-			legend: {
-				align: 'right',
-				x: 0,
-				verticalAlign: 'bottom',
-				y: 20,
-				floating: true,
-				backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || 'white',
-				borderColor: '#CCC',
-				borderWidth: 1,
-				shadow: false
-			},
-			tooltip: {
-				formatter: function () {
-					// console.log(this.point);
-					return '<b>' + this.x + '</b><br/>' +
-					this.series.name + ': ' + this.y + '<br/>' +
-					'总量: ' + this.point.stackTotal;
-				}
-			},
-			plotOptions: {
-				// bar 对应的是 chart 的 type,
-				bar: {
-					stacking: 'normal',
-					dataLabels: {
-						enabled: true,
-						color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
-						style: {
-							textShadow: '0 0 3px black'
+					navigation: {
+						menuItemStyle: {
+							fontSize: '10px'
 						}
 					}
-				}
-			},
-			pointHeigh: 30,
-			credits: {
-				enabled: false
-			},
-			series: statTestj
+				});
+			}
 		});
-		});
-
 
 		$(function () {
-			$('#container-total').highcharts({
-				colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
-				chart: {
-					type: 'column'
-				},
-				title: {
-					text: gameTypeInfo+'总收支'
-				},
-				subtitle: {
-					text: statTimeZone
-				},
-				xAxis: {
-					type: 'category',
-					labels: {
-						// rotation: -45,
-						// style: {
-						// 	fontSize: '13px',
-						// 	fontFamily: 'Verdana, sans-serif'
-						// }
-					}
-				},
-
-				yAxis: {
-					// min: 0,
+			if ($('#container-timeswinrateadd').length) {
+				$('#container-timeswinrateadd').highcharts({
+					colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
+					chart: {
+						type: 'spline'
+					},
 					title: {
-						text: '总金额'
-					}
-				},
-				legend: {
-					enabled: true
-				},
-				tooltip: {
-					// formatter: function () {
-					// 	console.log(this.point);
-					// 	return '<b>' + this.x + '</b><br/>' +
-					// 	this.series.name + ': ' + this.y + '<br/>' +
-					// 	'总量: ' + this.point.stackTotal;
-					// }
-					pointFormat: '{series.name}: <b>{point.y:.1f}元</b><br>',
-					shared: true
-				},
-				credits: {
-					enabled: false
-				},
-				series: [{
-					name: '实收',
-					data: statPlayer,
-					dataLabels: {
-						enabled: true,
-						// rotation: -90,
-						color: '#FFFFFF',
-						align: 'center',
-		                // format: '{point.y:.1f}', // one decimal
-		                // y: 10, // 10 pixels down from the top
-		                color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
-		                style: {
-		                	textShadow: '0 0 1px black'
-		                }
-		            }
-		        },{
-		        	name: '应收',
-		        	data: dataTotalReal,
-		        	dataLabels: {
-		        		enabled: true,
-						// rotation: -90,
-						color: '#FFFFFF',
-						align: 'center',
-		                // format: '{point.y:.1f}', // one decimal
-		                // y: 10, // 10 pixels down from the top
-		                color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
-		                style: {
-		                	textShadow: '0 0 1px black'
-		                }
-		            }
-		        }]
-		    });
-		});
-
-		$(function () {
-			$('#container-total-avg').highcharts({
-				colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
-				chart: {
-					type: 'column'
-				},
-				title: {
-					text: gameTypeInfo+'场均收支'
-				},
-				subtitle: {
-					text: statTimeZone
-				},
-				xAxis: {
-					type: 'category',
-					labels: {
-						// rotation: -45,
-						// style: {
-						// 	fontSize: '13px',
-						// 	fontFamily: 'Verdana, sans-serif'
-						// }
-					}
-				},
-
-				yAxis: {
-					// min: 0,
-					title: {
-						text: '场均'
-					}
-				},
-				legend: {
-					enabled: false
-				},
-				tooltip: {
-					// formatter: function () {
-					// 	console.log(this.point);
-					// 	return '<b>' + this.x + '</b><br/>' +
-					// 	this.series.name + ': ' + this.y + '<br/>' +
-					// 	'总量: ' + this.point.stackTotal;
-					// }
-					pointFormat: '场均收支: <b>{point.y:.1f}元</b>'
-				},
-				credits: {
-					enabled: false
-				},
-				series: [{
-					name: '场均收支',
-					data: date_avg,
-					color: '#f7a35c',
-					// colorByPoint:true,  //或者直接写在这里
-					// 	colors: ['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9', 
-    				// '#f15c80', '#e4d354', '#8085e8', '#8d4653', '#91e8e1'],
-    				dataLabels: {
-    					enabled: true,
-						// rotation: -90,
-						color: '#FFFFFF',
-						align: 'center',
-		                // format: '{point.y:.1f}', // one decimal
-		                // y: 10, // 10 pixels down from the top
-		                color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
-		                style: {
-		                	textShadow: '0 0 1px black'
-		                }
-		            }
-		        }]
-		    });
-		});
-
-
-		$(function () {
-			$('#container-monthly').highcharts({
-				colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
-				chart: {
-					type: 'column'
-				},
-				title: {
-					text: gameTypeInfo+'每月营收: '+personName
-				},
-				subtitle: {
-					text: statTimeZone
-				},
-				credits: {
-					enabled: false
-				},
-				xAxis: {
-					categories: [
-					'1月',
-					'2月',
-					'3月',
-					'4月',
-					'5月',
-					'6月',
-					'7月',
-					'8月',
-					'9月',
-					'10月',
-					'11月',
-					'12月'
-					],
-					crosshair: true
-				},
-				yAxis: [{ // Primary yAxis
+						text: ''
+					},
+					subtitle: {
+						text: ''
+					},
+					xAxis: {
+						categories: userTimesWinRateUserDate,
+						labels: {
+							overflow: 'justify'
+						}
+					},
+					yAxis: {
+						title: {
+							text: false
+						},
+					minorGridLineWidth: 0,
+					gridLineWidth: 0,
+					alternateGridColor: null,
+					},
+					tooltip: {
+						valueSuffix: '%'
+					},
+					credits: {
+						enabled: false
+					},
+					plotOptions: {	
+						spline: {
+							lineWidth: 4,
+							states: {
+								hover: {
+									lineWidth: 5
+								}
+							},
+							marker: {
+								enabled: false
+							},
+						}
+					},
+					series: userTimesWinRateUser,
 					
-					title: {
-						text: false,
+					navigation: {
+						menuItemStyle: {
+							fontSize: '10px'
+						}
+					}
+				});
+			}
+		});
+
+		$(function () {
+			if ($('#container').length) {
+				$('#container').highcharts({
+					colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac','#ffcc00','#ff9900'],
+					chart: {
+					type: 'bar'
+				},
+				title: {
+					text: ''
+
+				},
+				subtitle: {
+					text: ''
+				},
+				xAxis: {
+					categories: statTimej,
+					labels: {
 					},
-					opposite: true
-				},{
-					//min: 0,
+					stackLabels: {
+						enabled: true,
+						style: {
+							fontWeight: 'bold',
+							color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
+						}
+					}
+				},
+				yAxis: {
 					title: {
+						enabled: false,
 						text: false
 					}
-				}],
+				},
+				legend: {
+					align: 'right',
+					x: 0,
+					verticalAlign: 'bottom',
+					y: 20,
+					floating: true,
+					backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || 'white',
+					borderColor: '#CCC',
+					borderWidth: 1,
+					shadow: false
+				},
 				tooltip: {
-				// 	formatter: function () {
-		  //   		console.log(this.points);
+					formatter: function () {
+						return '<b>' + this.x + '</b><br/>' +
+						this.series.name + ': ' + this.y + '<br/>' +
+						'总量: ' + this.point.stackTotal;
+					}
+				},
+				plotOptions: {
+					bar: {
+						stacking: 'normal',
+						dataLabels: {
+							enabled: true,
+							color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
+							style: {
+								textShadow: '0 0 3px black'
+							}
+						}
+					}
+				},
+				pointHeigh: 30,
+				credits: {
+					enabled: false
+				},
+				series: statTestj
+				});
+			}
+		});
 
-				// 	// 此处需要在原data 数组中构造相应数组结构，图标中的数据key值是“y“即可，其他的key值不限，才能在point 中显示相应的参数
-				// 	return '营收: ' + this.points["0"].y+'<br/>'+
-				// 	'场均: ' + Math.round(this.points["1"].y)+'元/场<br/>'+
-				// 	'胜: ' + this.points["1"].point.wincount +'场<br/>'+
-				// 	'共: ' + this.points["1"].point.totalcount +'场<br/>'+
-				// 	'场均: ' + Math.round(this.points["0"].y/this.points["1"].point.totalcount) + '元/场'
-				// 	;
-				// },
-					// console.log(this.points);
-					headerFormat: '<span style="font-size:10px;text-align: left">{point.key}</span><table>',
-					pointFormat: '<tr><td style="text-align: left;color:{series.color};padding:0">{series.name}：</td>' +
-					'<td style="padding:0"><b>{point.y:.0f} </b></td></tr>',
-					footerFormat: '</table>',
-					shared: true,
-					useHTML: true
+
+		$(function () {
+			if ($('#container-total').length) {
+				$('#container-total').highcharts({
+					colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
+					chart: {
+						type: 'column'
+					},
+					title: {
+						text: gameTypeInfo+'总收支'
+					},
+					subtitle: {
+						text: statTimeZone
+					},
+					xAxis: {
+						type: 'category',
+						labels: {
+						}
+					},
+
+					yAxis: {
+						title: {
+							text: '总金额'
+						}
+					},
+					legend: {
+						enabled: true
+					},
+					tooltip: {
+						pointFormat: '{series.name}: <b>{point.y:.1f}元</b><br>',
+						shared: true
+					},
+					credits: {
+						enabled: false
+					},
+					series: [{
+						name: '实收',
+						data: statPlayer,
+						dataLabels: {
+							enabled: true,
+							color: '#FFFFFF',
+							align: 'center',
+							color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
+							style: {
+								textShadow: '0 0 1px black'
+							}
+						}
+					},{
+						name: '应收',
+						data: dataTotalReal,
+						dataLabels: {
+							enabled: true,
+							color: '#FFFFFF',
+							align: 'center',
+							color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
+							style: {
+								textShadow: '0 0 1px black'
+							}
+						}
+					}]
+				});
+			}
+		});
+
+		$(function () {
+			if ($('#container-total-avg').length) {
+				$('#container-total-avg').highcharts({
+					colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
+					chart: {
+						type: 'column'
+					},
+					title: {
+						text: gameTypeInfo+'场均收支'
+					},
+					subtitle: {
+						text: statTimeZone
+					},
+					xAxis: {
+						type: 'category',
+						labels: {
+						}
+					},
+
+					yAxis: {
+						title: {
+							text: '场均'
+						}
+					},
+					legend: {
+						enabled: false
+					},
+					tooltip: {
+						pointFormat: '场均收支: <b>{point.y:.1f}元</b>'
+					},
+					credits: {
+						enabled: false
+					},
+					series: [{
+						name: '场均收支',
+						data: date_avg,
+						color: '#f7a35c',
+						dataLabels: {
+							enabled: true,
+							color: '#FFFFFF',
+							align: 'center',
+							color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
+							style: {
+								textShadow: '0 0 1px black'
+							}
+						}
+					}]
+				});
+			}
+		});
+
+
+		$(function () {
+			if ($('#container-monthly').length) {
+				$('#container-monthly').highcharts({
+					colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
+					chart: {
+						type: 'column'
+					},
+					title: {
+						text: gameTypeInfo+'每月营收: '+personName
+					},
+					subtitle: {
+						text: statTimeZone
+					},
+					credits: {
+						enabled: false
+					},
+					xAxis: {
+						categories: [
+						'1月',
+						'2月',
+						'3月',
+						'4月',
+						'5月',
+						'6月',
+						'7月',
+						'8月',
+						'9月',
+						'10月',
+						'11月',
+						'12月'
+						],
+						crosshair: true
+					},
+					yAxis: [{ // Primary yAxis
+						
+						title: {
+							text: false,
+						},
+						opposite: true
+					},{
+						//min: 0,
+						title: {
+							text: false
+						}
+					}],
+					tooltip: {
+						headerFormat: '<span style="font-size:10px;text-align: left">{point.key}</span><table>',
+						pointFormat: '<tr><td style="text-align: left;color:{series.color};padding:0">{series.name}：</td>' +
+						'<td style="padding:0"><b>{point.y:.0f} </b></td></tr>',
+						footerFormat: '</table>',
+						shared: true,
+						useHTML: true
+					},
+					plotOptions: {
+						column: {
+							colorByPoint:true
+						}
+					},
+					series: [{
+						name: "营收(元)",
+						type: 'column',
+						data: userMonthTotal,
+					},{
+						name: "场均(元/场)",
+						type: 'spline',
+						data: userMonthAvg,
+					},{
+						name: "胜率(%)",
+						type: 'spline',
+						data: userMonthWinRate,
+					}]
+				});
+			}
+		});
+
+
+
+
+		$(function () {
+			if ($('#container-winer').length) {
+				$('#container-winer').highcharts({
+					colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
+					chart: {
+						type: 'column'
+					},
+					title: {
+						text: gameTypeInfo+'胜率'
+					},
+					subtitle: {
+						text: statTimeZone
+					},
+					xAxis: {
+						type: 'category', // 只有type 为 category 时，才会从series 对应的date数组中取 key 是 name 的值作为坐标名称
+						labels: {
+						}
+					},
+					yAxis: {
+						title: {
+							text: '胜率'
+						}
+					},
+					legend: {
+						enabled: false
+					},
+					tooltip: {
+						pointFormat: '胜率: <b>{point.y:.2f}%</b>'
+					},
+
+					tooltip: {
+						formatter: function () {
+							console.log(this.point);
+							return '<b>'+this.point['name'] + '</b><br/>' +
+							this.series.name + ': ' + this.y+'%<br/>' + 
+							this.point.gamecount + '场胜' + this.point.wincont +'场'
+							;
+						}
+					},
+					credits: {
+						enabled: false
+					},
+					series: [{
+						name: '胜率',
+						data: winerRate,
+						color: '#8085e8',
+						rateLabels: '4',
+						dataLabels: {
+							enabled: true,
+							color: '#FFFFFF',
+							align: 'center',
+							format: '{point.y:.2f}%', // one decimal
+							color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
+							style: {
+								textShadow: '0 0 1px black'
+							}
+						}
+					}]
+				});
+			}
+		});
+
+		$(function () {
+			if ($('#container-kill').length) {
+				$('#container-kill').highcharts({
+					colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
+					chart: {
+						type: 'column'
+					},
+					title: {
+						text:''
+					},
+					subtitle: {
+						text: ''
+					},
+					xAxis: {
+						type: 'category',
+						labels: {
+						}
+					},
+					yAxis: {
+						title: {
+							text: '清台次数'
+						}
+					},
+					legend: {
+						enabled: false
+					},
+					tooltip: {
+						pointFormat: '总次数: <b>{point.y:.1f}次</b>'
+					},
+					credits: {
+						enabled: false
+					},
+					series: [{
+						name: '总次数',
+						data: killRank,
+						dataLabels: {
+							enabled: true,
+							color: '#FFFFFF',
+							align: 'center',
+							color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
+							style: {
+								textShadow: '0 0 1px black'
+							}
+						}
+					}]
+				});
+			}
+		});
+
+		$(function () {
+			if ($('#container-pie').length) {
+				$('#container-pie').highcharts({
+					colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
+					chart: {
+						plotBackgroundColor: null,
+						plotBorderWidth: null,
+						plotShadow: false
+					},
+					title: {
+						text: gameTypeInfo+'盈利比例'
+					},
+					tooltip: {
+						headerFormat: '{series.name}<br>',
+						pointFormat: '{point.name}: <b>{point.percentage:.1f}%</b>'
+					},
+					plotOptions: {
+						pie: {
+							allowPointSelect: true,
+							cursor: 'pointer',
+							dataLabels: {
+								enabled: true,
+								format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+								style: {
+									color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+								}
+							}
+						}
+					},
+					credits: {
+						enabled: false
+					},
+					series: [{
+						type: 'pie',
+						name: '盈利占比',
+						data: statPlayer
+					}]
+				});
+			}
+		});
+
+		$(function () {
+			if ($('#container-person-positon').length) {
+				$('#container-person-positon').highcharts({
+					colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
+					chart: {
+						zoomType: 'xy'
+					},
+					title: {
+						text: '-'+personName+'-在哪儿赢得多'
+					},
+					subtitle: {
+						text: ''
+					},
+				    xAxis: {
+					    	type: 'category',
+				    },
+				    xAxis: {
+				    	max: 3,
+				    	min: 0,
+				    	categories: ['东', '南', '西' ,'北']
+				    },
+				    yAxis: [
+				    { // Secondary yAxis
+				    	labels: {
+				    		format: '{value}%',
+				    		style: {
+				    			color: Highcharts.getOptions().colors[1]
+				    		}
+				    	},
+				    	title: {
+				    		text: '胜率',
+				    		style: {
+				    			color: Highcharts.getOptions().colors[1]
+				    		}
+				    	},
+				    	opposite: true
+				    }, 
+				    { // Primary yAxis
+				    	title: {
+				    		text: '奖金',
+				    		style: {
+				    			color: Highcharts.getOptions().colors[0]
+				    		}
+				    	},
+				    	labels: {
+				    		format: '￥{value}',
+				    		style: {
+				    			color: Highcharts.getOptions().colors[0]
+				    		}
+				    	}
+				    }],
+				    tooltip: {
+				    	shared: true,
+				    	formatter: function () {
+							return '赢取奖金: ' + this.points["0"].y+'<br/>'+
+							'胜率: ' + Math.round(this.points["1"].y)+'%<br/>'+
+							'胜: ' + this.points["1"].point.wincount +'场<br/>'+
+							'共: ' + this.points["1"].point.totalcount +'场<br/>'+
+							'场均: ' + Math.round(this.points["0"].y/this.points["1"].point.totalcount) + '元/场'
+							;
+						}
+
+				    },
+				    credits: {
+						enabled: false //去除水印
+					},
+					legend: {
+						layout: 'vertical',
+						align: 'left',
+						x: 10,
+						verticalAlign: 'top',
+						y: 0,
+						floating: true,
+						backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+					},
+					plotOptions: {
+						series: {
+							threshold: -10
+						}
+					},
+					series: [{
+						name: '赢得奖金',
+						color:'#f3d64e',
+						type: 'column',
+						zones: [{
+							value: 0,
+							color: '#ff0080'
+						}],
+						yAxis: 1,
+						data: personPositonWin,
+						tooltip: {
+							valueSuffix: ' mm'
+						}
+					}, {
+						name: '赢钱概率',
+						color:'#555555',
+						type: 'spline',
+						data: personPositonWinRate,
+						tooltip: {
+							valueSuffix: '°C'
+						}
+					}]
+				})
+			}
+		});
+
+
+		$(function () {
+			if ($('#container-positon-detail').length) {
+				$('#container-positon-detail').highcharts({
+					colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
+					chart: {
+						zoomType: 'xy'
+					},
+					title: {
+						text: '每人在每个方向的汇总'
+					},
+					subtitle: {
+						text: ''
+					},
+				    xAxis: {
+				    	type: 'category',
+				    },
+				    xAxis: {
+				    	max: 3,
+				    	min: 0,
+				    	categories: ['东', '南', '西' ,'北']
+				    },
+				    yAxis: [
+				    { // Secondary yAxis
+				    	title: {
+				    		text: '奖金',
+				    		style: {
+				    			color: Highcharts.getOptions().colors[0]
+				    		}
+				    	},
+				    	labels: {
+				    		format: '{value}',
+				    		style: {
+				    			color: Highcharts.getOptions().colors[0]
+				    		}
+				    	},
+				    }],
+				    tooltip: {
+				    	shared: true,
+				    	formatter: function () {
+				    		console.log(this.points);
+
+							return this.points["0"].series.userOptions.name+': ' + this.points["0"].y+'<br/>'+
+							this.points["1"].series.userOptions.name+': ' + this.points["1"].y+'<br/>'+
+							this.points["2"].series.userOptions.name+': ' + this.points["2"].y+'<br/>'+
+							this.points["3"].series.userOptions.name+': ' + this.points["3"].y+'<br/>'+
+							this.points["4"].series.userOptions.name+': ' + this.points["4"].y
+							;
+						}
+
+				    },
+				    credits: {
+						enabled: false //去除水印
+					},
+					legend: {
+						layout: 'vertical',
+						align: 'left',
+						x: 10,
+						verticalAlign: 'top',
+						y: 0,
+						floating: true,
+						backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+					},
+					plotOptions: {
+						series: {
+							threshold: -10
+						}
+					},
+					series: eachPositionDetailWin
+				})
+			}
+		});
+
+
+
+		$(function () {
+			if ($('#container-position-rate-new').length) {
+				$('#container-position-rate-new').highcharts({
+					colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
+					chart: {
+						zoomType: 'xy'
+					},
+					credits: {
+						enabled: false //去除水印
+					},
+					title: {
+						text: ''
+					},
+					subtitle: {
+						text: ''
+					},
+				    xAxis: {
+				    	type: 'category',
+				    	labels: {
+						}
+					},
+					xAxis: {
+						max: 3,
+						min: 0,
+						categories: ['东', '南', '西' ,'北']
+					},
+
+				    yAxis: [{ // Primary yAxis
+				    	labels: {
+				    		format: '{value}%',
+				    		style: {
+				    			color: Highcharts.getOptions().colors[1]
+				    		}
+				    	},
+				    	title: {
+				    		text: '胜率',
+				    		style: {
+				    			color: Highcharts.getOptions().colors[1]
+				    		}
+				    	}
+				    }, { // Secondary yAxis
+				    	title: {
+				    		text: '奖金',
+				    		style: {
+				    			color: Highcharts.getOptions().colors[1]
+				    		}
+				    	},
+				    	labels: {
+				    		format: '￥{value}',
+				    		style: {
+				    			color: Highcharts.getOptions().colors[1]
+				    		}
+				    	},
+				    	opposite: true
+				    }],
+				    tooltip: {
+				    	shared: true,
+				    	formatter: function () {
+				    		console.log(this.points["0"].y);
+
+							return '赢取奖金: ' + this.points["0"].y+'<br/>'+
+							'胜率: ' + this.points["1"].y+'%';
+						}
+
+				    },
+
+				    legend: {
+				    	layout: 'vertical',
+				    	align: 'left',
+				    	x: 10,
+				    	verticalAlign: 'top',
+				    	y: 0,
+				    	floating: true,
+				    	backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+				    },
+				    series: [{
+				    	name: '赢得奖金',
+				    	type: 'column',
+				    	yAxis: 1,
+				    	data: positionWinNew,
+				    	tooltip: {
+				    		valueSuffix: ' mm'
+				    	}
+				    }, {
+				    	name: '胜率',
+				    	type: 'spline',
+				    	data: positionWinRateNew,
+				    	tooltip: {
+				    		valueSuffix: '°C'
+				    	}
+				    }]
+				})
+			}
+		});
+
+		$(function () {
+			if ($('#container-position-rate').length) {
+				$('#container-position-rate').highcharts({
+					
+					chart: {
+						zoomType: 'xy'
+					},
+					title: {
+						text: ''
+					},
+					subtitle: {
+						text: ''
+					},
+				    xAxis: {
+				    	type: 'category',
+				    	labels: {
+						}
+					},
+					xAxis: {
+						max: 3,
+						min: 0,
+						categories: ['东', '南', '西' ,'北']
+					},
+
+				    yAxis: [{ // Primary yAxis
+				    	labels: {
+				    		format: '{value}%',
+				    		style: {
+				    			color: Highcharts.getOptions().colors[1]
+				    		}
+				    	},
+				    	title: {
+				    		text: '胜率',
+				    		style: {
+				    			color: Highcharts.getOptions().colors[1]
+				    		}
+				    	}
+				    }, { // Secondary yAxis
+				    	title: {
+				    		text: '奖金',
+				    		style: {
+				    			color: Highcharts.getOptions().colors[1]
+				    		}
+				    	},
+				    	labels: {
+				    		format: '￥{value}',
+				    		style: {
+				    			color: Highcharts.getOptions().colors[1]
+				    		}
+				    	},
+				    	opposite: true
+				    }],
+				    tooltip: {
+				    	shared: true,
+				    	formatter: function () {
+				    		console.log(this.points["0"].y);
+
+							return '赢取奖金: ' + this.points["0"].y+'<br/>'+
+							'胜率: ' + this.points["1"].y+'%';
+						}
+
+				    },
+				    credits: {
+						enabled: false //去除水印
+					},
+				    legend: {
+				    	layout: 'vertical',
+				    	align: 'left',
+				    	x: 10,
+				    	verticalAlign: 'top',
+				    	y: 0,
+				    	floating: true,
+				    	backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+				    },
+				    series: [{
+				    	name: '赢得奖金',
+				    	color:'#536bdb',
+				    	type: 'column',
+				    	yAxis: 1,
+				    	data: positionWin,
+				    	tooltip: {
+				    		valueSuffix: ' mm'
+				    	}
+				    }, {
+				    	name: '赢钱概率',
+				    	color:'#1cc7ea',
+				    	type: 'spline',
+				    	data: positionWinRate,
+				    	tooltip: {
+				    		valueSuffix: '°C'
+				    	}
+				    }]
+				})
+			}
+		});
+
+
+		$(function () {
+			if ($('#container-position-lose-rate').length) {
+				$('#container-position-lose-rate').highcharts({
+					colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
+					chart: {
+						zoomType: 'xy'
+					},
+					title: {
+						text:''
+					},
+					subtitle: {
+						text: ''
+					},
+
+					credits: {
+						enabled: false //去除水印
+					},
+
+					xAxis: {
+						type: 'category',
+					},
+					xAxis: {
+						max: 3,
+						min: 0,
+						categories: ['东', '南', '西' ,'北']
+					},
+
+				    yAxis: [{ // Primary yAxis
+				    	labels: {
+				    		format: '{value}%',
+				    		style: {
+				    			color: Highcharts.getOptions().colors[1]
+				    		}
+				    	},
+				    	title: {
+				    		text: '输钱概率',
+				    		style: {
+				    			color: Highcharts.getOptions().colors[1]
+				    		}
+				    	}
+				    }, { // Secondary yAxis
+				    	title: {
+				    		text: '输钱',
+				    		style: {
+				    			color: Highcharts.getOptions().colors[1]
+				    		}
+				    	},
+				    	labels: {
+				    		format: '￥{value}',
+				    		style: {
+				    			color: Highcharts.getOptions().colors[1]
+				    		}
+				    	},
+				    	opposite: true
+				    }],
+				    tooltip: {
+				    	shared: true,
+				    	formatter: function () {
+				    		console.log(this.points["0"].y);
+
+							return '输的金额: ' + this.points["0"].y+'<br/>'+
+							'输钱概率: ' + this.points["1"].y+'%';
+						}
+
+				    },
+
+				    legend: {
+				    	layout: 'vertical',
+				    	align: 'left',
+				    	x: 10,
+				    	verticalAlign: 'top',
+				    	y: 0,
+				    	floating: true,
+				    	backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+				    },
+				    series: [{
+				    	name: '输的金额',
+				    	color:'#f22f52',
+				    	type: 'column',
+				    	yAxis: 1,
+				    	data: positionLose,
+				    	tooltip: {
+				    		valueSuffix: ' mm'
+				    	}
+				    }, {
+				    	name: '输钱概率',
+				    	color:'#f09aac',
+				    	type: 'spline',
+				    	data: positionLoseRate,
+				    	tooltip: {
+				    		valueSuffix: '°C'
+				    	}
+				    }]
+				})
+			}
+		});
+		
+		$(function(){
+			if ($('#container-duidie').length) {
+				var chart = Highcharts.chart('container-duidie', {
+					colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
+				chart: {
+					type: 'column'
+				},
+				title: {
+					text: '清台榜'
+				},
+				xAxis: {
+					categories: killRankPlayerJson
+				},
+				yAxis: {
+					min: 0,
+					title: {
+						text: '清台总量'
+					},
+					stackLabels: {  // 堆叠数据标签
+						enabled: true,
+						style: {
+							fontWeight: 'bold',
+							color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
+						}
+					}
+				},
+				legend: {
+					align: 'right',
+					x: -30,
+					verticalAlign: 'top',
+					y: 25,
+					floating: true,
+					backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || 'white',
+					borderColor: '#CCC',
+					borderWidth: 1,
+					shadow: false
+				},
+				tooltip: {
+					formatter: function () {
+						return  this.series.name + ': ' + this.y ;
+					}
 				},
 				plotOptions: {
 					column: {
-						colorByPoint:true
-					}
-				},
-				series: [{
-					// name: personName,
-					name: "营收(元)",
-					type: 'column',
-					// colorByPoint:true,  //或者直接写在这里
-					data: userMonthTotal,
-				},{
-					// name: personName,
-					name: "场均(元/场)",
-					type: 'spline',
-					// colorByPoint:true,  //或者直接写在这里
-					data: userMonthAvg,
-				},{
-					// name: personName,
-					name: "胜率(%)",
-					type: 'spline',
-					// colorByPoint:true,  //或者直接写在这里
-					data: userMonthWinRate,
-				}
-				// ,{
-				// 	// name: personName,
-				// 	name: "次数",
-				// 	type: 'spline',
-				// 	colorByPoint:true,  //或者直接写在这里
-				// 	data: userMonthMimes,
-				// 	format: '{point.y:.2f}%', // one decimal
-				// }
-				]
-			});
-		});
-
-
-
-
-		$(function () {
-			$('#container-winer').highcharts({
-				colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
-				chart: {
-					type: 'column'
-				},
-				title: {
-					text: gameTypeInfo+'胜率'
-				},
-				subtitle: {
-					text: statTimeZone
-				},
-				xAxis: {
-				type: 'category', // 只有type 为 category 时，才会从series 对应的date数组中取 key 是 name 的值作为坐标名称
-				labels: {
-					// rotation: -45,
-					// style: {
-					// 	fontSize: '13px',
-					// 	fontFamily: 'Verdana, sans-serif'
-					// }
-				}
-			},
-			yAxis: {
-				// min: 0,
-				title: {
-					text: '胜率'
-				}
-			},
-			legend: {
-				enabled: false
-			},
-			tooltip: {
-				pointFormat: '胜率: <b>{point.y:.2f}%</b>'
-			},
-
-			tooltip: {
-				formatter: function () {
-					console.log(this.point);
-					// 此处需要在原data 数组中构造相应数组结构，才能在point 中显示相应的参数
-					return '<b>'+this.point['name'] + '</b><br/>' +
-					this.series.name + ': ' + this.y+'%<br/>' + 
-					this.point.gamecount + '场胜' + this.point.wincont +'场'
-					;
-				}
-			},
-			credits: {
-				enabled: false
-			},
-			series: [{
-				name: '胜率',
-				data: winerRate,
-				// data: [{
-				// 	name:winerRate[0],
-				// 	y:winerRate[1],
-				// 	countgame:winerRate[2],
-				// }],
-				color: '#8085e8',
-				rateLabels: '4',
-				dataLabels: {
-					enabled: true,
-					// rotation: -90,
-					color: '#FFFFFF',
-					align: 'center',
-                format: '{point.y:.2f}%', // one decimal
-                // y: 10, // 10 pixels down from the top
-                color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
-                style: {
-                	textShadow: '0 0 1px black'
-                }
-            }
-        }]
-    });
-		});
-
-		$(function () {
-			$('#container-kill').highcharts({
-				colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
-				chart: {
-					type: 'column'
-				},
-				title: {
-					text:''
-				},
-				subtitle: {
-					text: ''
-				},
-				xAxis: {
-					type: 'category',
-					labels: {
-					// rotation: -45,
-					// style: {
-					// 	fontSize: '13px',
-					// 	fontFamily: 'Verdana, sans-serif'
-					// }
-				}
-			},
-			yAxis: {
-				// min: 0,
-				title: {
-					text: '清台次数'
-				}
-			},
-			legend: {
-				enabled: false
-			},
-			tooltip: {
-				pointFormat: '总次数: <b>{point.y:.1f}次</b>'
-			},
-			credits: {
-				enabled: false
-			},
-			series: [{
-				name: '总次数',
-				data: killRank,
-				dataLabels: {
-					enabled: true,
-					// rotation: -90,
-					color: '#FFFFFF',
-					align: 'center',
-                // format: '{point.y:.1f}', // one decimal
-                // y: 10, // 10 pixels down from the top
-                color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
-                style: {
-                	textShadow: '0 0 1px black'
-                }
-            }
-        }]
-    });
-		});
-
-		$(function () {
-			$('#container-pie').highcharts({
-				colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
-				chart: {
-					plotBackgroundColor: null,
-					plotBorderWidth: null,
-					plotShadow: false
-				},
-				title: {
-					text: gameTypeInfo+'盈利比例'
-				},
-				tooltip: {
-					headerFormat: '{series.name}<br>',
-					pointFormat: '{point.name}: <b>{point.percentage:.1f}%</b>'
-				},
-				plotOptions: {
-					pie: {
-						allowPointSelect: true,
-						cursor: 'pointer',
+						stacking: 'normal',
 						dataLabels: {
 							enabled: true,
-							format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+							color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
 							style: {
-								color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+								textOutline: '1px 1px black'
 							}
 						}
 					}
 				},
-				credits: {
-					enabled: false
-				},
-				series: [{
-					type: 'pie',
-					name: '盈利占比',
-					data: statPlayer
-				}]
-			});
-		});
-
-		$(function () {
-			$('#container-person-positon').highcharts({
-				colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
-				chart: {
-					zoomType: 'xy'
-				},
-				title: {
-					text: '-'+personName+'-在哪儿赢得多'
-				},
-				subtitle: {
-					text: ''
-				},
-		    // xAxis: [{
-		    //     categories: ['0','东(皮椅子)', '南(黑椅子)', '西(黑椅子)' ,'北(红椅子)'],
-		    //     crosshair: true
-		    // }],
-		    xAxis: {
-		    	type: 'category',
-		    },
-		    xAxis: {
-		    	max: 3,
-		    	min: 0,
-		    	categories: ['东', '南', '西' ,'北']
-		    },
-		    yAxis: [
-		    { // Secondary yAxis
-		    	labels: {
-		    		format: '{value}%',
-		    		style: {
-		    			color: Highcharts.getOptions().colors[1]
-		    		}
-		    	},
-		    	title: {
-		    		text: '胜率',
-		    		style: {
-		    			color: Highcharts.getOptions().colors[1]
-		    		}
-		    	},
-		    	opposite: true
-		    }, 
-		    { // Primary yAxis
-		    	title: {
-		    		text: '奖金',
-		    		style: {
-		    			color: Highcharts.getOptions().colors[0]
-		    		}
-		    	},
-		    	labels: {
-		    		format: '￥{value}',
-		    		style: {
-		    			color: Highcharts.getOptions().colors[0]
-		    		}
-		    	}
-		    }],
-		    tooltip: {
-		    	shared: true,
-		    	formatter: function () {
-		    		// console.log(this.points);
-
-					// 此处需要在原data 数组中构造相应数组结构，图标中的数据key值是“y“即可，其他的key值不限，才能在point 中显示相应的参数
-					return '赢取奖金: ' + this.points["0"].y+'<br/>'+
-					'胜率: ' + Math.round(this.points["1"].y)+'%<br/>'+
-					'胜: ' + this.points["1"].point.wincount +'场<br/>'+
-					'共: ' + this.points["1"].point.totalcount +'场<br/>'+
-					'场均: ' + Math.round(this.points["0"].y/this.points["1"].point.totalcount) + '元/场'
-					;
-				}
-
-		        // pointFormat: '胜率: <b>{point.y:.2f}%</b>'
-		    },
-		    credits: {
-				enabled: false //去除水印
-			},
-			legend: {
-				layout: 'vertical',
-				align: 'left',
-				x: 10,
-				verticalAlign: 'top',
-				y: 0,
-				floating: true,
-				backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
-			},
-			plotOptions: {
-				series: {
-					// zones: [{
-					// 	value: 0,
-					// 	color: '#ff0080'
-					// }],
-					threshold: -10
-				}
-			},
-			series: [{
-				name: '赢得奖金',
-				color:'#f3d64e',
-				type: 'column',
-				// wincount: personWin,
-				zones: [{
-					value: 0,
-					color: '#ff0080'
-				}],
-				yAxis: 1,
-				data: personPositonWin,
-				tooltip: {
-					valueSuffix: ' mm'
-				}
-			}, {
-				name: '赢钱概率',
-				// wincount:personWin,
-				color:'#555555',
-				type: 'spline',
-				data: personPositonWinRate,
-				tooltip: {
-					valueSuffix: '°C'
-				}
-			}]
-			// series: [{"type":"column","name":"aaa","data":[200,300,500,100]},{"type":"column","name":"bbb","data":[700,200,500,100]},{"type":"column","name":"ccc","data":[300,100,500,100]}]
-		})
-		});
-
-
-		$(function () {
-			$('#container-positon-detail').highcharts({
-				colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
-				chart: {
-					zoomType: 'xy'
-				},
-				title: {
-					text: '每人在每个方向的汇总'
-				},
-				subtitle: {
-					text: ''
-				},
-		    // xAxis: [{
-		    //     categories: ['0','东(皮椅子)', '南(黑椅子)', '西(黑椅子)' ,'北(红椅子)'],
-		    //     crosshair: true
-		    // }],
-		    xAxis: {
-		    	type: 'category',
-		    },
-		    xAxis: {
-		    	max: 3,
-		    	min: 0,
-		    	categories: ['东', '南', '西' ,'北']
-		    },
-		    yAxis: [
-		    // { // Primary yAxis
-		    // 	labels: {
-		    // 		format: '{value}%',
-		    // 		style: {
-		    // 			color: Highcharts.getOptions().colors[1]
-		    // 		}
-		    // 	},
-		    // 	title: {
-		    // 		text: '胜率',
-		    // 		style: {
-		    // 			color: Highcharts.getOptions().colors[1]
-		    // 		}
-		    // 	}
-		    // }, 
-		    { // Secondary yAxis
-		    	title: {
-		    		text: '奖金',
-		    		style: {
-		    			color: Highcharts.getOptions().colors[0]
-		    		}
-		    	},
-		    	labels: {
-		    		format: '{value}',
-		    		style: {
-		    			color: Highcharts.getOptions().colors[0]
-		    		}
-		    	},
-		    	// opposite: true
-		    }],
-		    tooltip: {
-		    	shared: true,
-		    	formatter: function () {
-		    		console.log(this.points);
-
-					// 此处需要在原data 数组中构造相应数组结构，图标中的数据key值是“y“即可，其他的key值不限，才能在point 中显示相应的参数
-					return this.points["0"].series.userOptions.name+': ' + this.points["0"].y+'<br/>'+
-					this.points["1"].series.userOptions.name+': ' + this.points["1"].y+'<br/>'+
-					this.points["2"].series.userOptions.name+': ' + this.points["2"].y+'<br/>'+
-					this.points["3"].series.userOptions.name+': ' + this.points["3"].y+'<br/>'+
-					this.points["4"].series.userOptions.name+': ' + this.points["4"].y
-					;
-				}
-
-		        // pointFormat: '胜率: <b>{point.y:.2f}%</b>'
-		    },
-		    credits: {
-				enabled: false //去除水印
-			},
-			legend: {
-				layout: 'vertical',
-				align: 'left',
-				x: 10,
-				verticalAlign: 'top',
-				y: 0,
-				floating: true,
-				backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
-			},
-			plotOptions: {
-				series: {
-					// zones: [{
-					// 	value: 0,
-					// 	color: '#ff0080'
-					// }],
-					threshold: -10
-				}
-			},
-			series: eachPositionDetailWin
-			// series: [{"type":"column","name":"aaa","data":[200,300,500,100]},{"type":"column","name":"bbb","data":[700,200,500,100]},{"type":"column","name":"ccc","data":[300,100,500,100]}]
-		})
-		});
-
-
-
-		$(function () {
-			$('#container-position-rate-new').highcharts({
-				colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
-			chart: {
-				zoomType: 'xy'
-			},
-			credits: {
-			enabled: false //去除水印
-			},
-			title: {
-				text: ''
-			},
-			subtitle: {
-				text: ''
-			},
-		    // xAxis: [{
-		    //     categories: ['0','东(皮椅子)', '南(黑椅子)', '西(黑椅子)' ,'北(红椅子)'],
-		    //     crosshair: true
-		    // }],
-		    xAxis: {
-		    	type: 'category',
-		    	labels: {
-					// rotation: -45,
-					// style: {
-					// 	fontSize: '13px',
-					// 	fontFamily: 'Verdana, sans-serif'
-					// }
-				}
-			},
-			xAxis: {
-				max: 3,
-				min: 0,
-				categories: ['东', '南', '西' ,'北']
-			},
-
-		    yAxis: [{ // Primary yAxis
-		    	labels: {
-		    		format: '{value}%',
-		    		style: {
-		    			color: Highcharts.getOptions().colors[1]
-		    		}
-		    	},
-		    	title: {
-		    		text: '胜率',
-		    		style: {
-		    			color: Highcharts.getOptions().colors[1]
-		    		}
-		    	}
-		    }, { // Secondary yAxis
-		    	title: {
-		    		text: '奖金',
-		    		style: {
-		    			color: Highcharts.getOptions().colors[1]
-		    		}
-		    	},
-		    	labels: {
-		    		format: '￥{value}',
-		    		style: {
-		    			color: Highcharts.getOptions().colors[1]
-		    		}
-		    	},
-		    	opposite: true
-		    }],
-		    tooltip: {
-		    	shared: true,
-		    	formatter: function () {
-		    		console.log(this.points["0"].y);
-
-					// 此处需要在原data 数组中构造相应数组结构，才能在point 中显示相应的参数
-					return '赢取奖金: ' + this.points["0"].y+'<br/>'+
-					'胜率: ' + this.points["1"].y+'%';
-				}
-
-		        // pointFormat: '胜率: <b>{point.y:.2f}%</b>'
-		    },
-
-		    legend: {
-		    	layout: 'vertical',
-		    	align: 'left',
-		    	x: 10,
-		    	verticalAlign: 'top',
-		    	y: 0,
-		    	floating: true,
-		    	backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
-		    },
-		    plotOptions: {
-		    	series: {
-		    		zones: [{
-		    			value: 0,
-		    			color: '#ff0080'
-		    		}],
-		    		threshold: -10
-		    	}
-		    },
-		    series: [{
-		    	name: '赢得奖金',
-		    	type: 'column',
-		    	yAxis: 1,
-		    	data: positionWinNew,
-		    	tooltip: {
-		    		valueSuffix: ' mm'
-		    	}
-		    }, {
-		    	name: '胜率',
-		    	type: 'spline',
-		    	data: positionWinRateNew,
-		    	tooltip: {
-		    		valueSuffix: '°C'
-		    	}
-		    }]
-		    // series: [{
-		    // 	name: '甲',
-		    // 	type: 'column',
-		    // 	yAxis: 1,
-		    // 	data: positionWinNew,
-
-		    // }, 
-		    // {
-		    // 	name: '乙',
-		    // 	type: 'column',
-		    // 	data: positionWinNew,
-
-		    // }, 
-		    // {
-		    // 	name: '胜率',
-		    // 	type: 'spline',
-		    // 	data: positionWinRateNew,
-
-		    // }]
-		})
-		});
-
-		$(function () {
-			$('#container-position-rate').highcharts({
-				
-				chart: {
-					zoomType: 'xy'
-				},
-				title: {
-					text: ''
-				},
-				subtitle: {
-					text: ''
-				},
-		    // xAxis: [{
-		    //     categories: ['0','东(皮椅子)', '南(黑椅子)', '西(黑椅子)' ,'北(红椅子)'],
-		    //     crosshair: true
-		    // }],
-		    xAxis: {
-		    	type: 'category',
-		    	labels: {
-					// rotation: -45,
-					// style: {
-					// 	fontSize: '13px',
-					// 	fontFamily: 'Verdana, sans-serif'
-					// }
-				}
-			},
-			xAxis: {
-				max: 3,
-				min: 0,
-				categories: ['东', '南', '西' ,'北']
-			},
-
-		    yAxis: [{ // Primary yAxis
-		    	labels: {
-		    		format: '{value}%',
-		    		style: {
-		    			color: Highcharts.getOptions().colors[1]
-		    		}
-		    	},
-		    	title: {
-		    		text: '胜率',
-		    		style: {
-		    			color: Highcharts.getOptions().colors[1]
-		    		}
-		    	}
-		    }, { // Secondary yAxis
-		    	title: {
-		    		text: '奖金',
-		    		style: {
-		    			color: Highcharts.getOptions().colors[1]
-		    		}
-		    	},
-		    	labels: {
-		    		format: '￥{value}',
-		    		style: {
-		    			color: Highcharts.getOptions().colors[1]
-		    		}
-		    	},
-		    	opposite: true
-		    }],
-		    tooltip: {
-		    	shared: true,
-		    	formatter: function () {
-		    		console.log(this.points["0"].y);
-
-					// 此处需要在原data 数组中构造相应数组结构，才能在point 中显示相应的参数
-					return '赢取奖金: ' + this.points["0"].y+'<br/>'+
-					'胜率: ' + this.points["1"].y+'%';
-				}
-
-		        // pointFormat: '胜率: <b>{point.y:.2f}%</b>'
-		    },
-		    credits: {
-				enabled: false //去除水印
-			},
-			legend: {
-				layout: 'vertical',
-				align: 'left',
-				x: 10,
-				verticalAlign: 'top',
-				y: 0,
-				floating: true,
-				backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
-			},
-			series: [{
-				name: '赢得奖金',
-				// colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#f9573d','#f09aac'],
-				color:'#536bdb',
-				type: 'column',
-				yAxis: 1,
-				data: positionWin,
-				tooltip: {
-					valueSuffix: ' mm'
-				}
-			}, {
-				name: '赢钱概率',
-				color:'#1cc7ea',
-				type: 'spline',
-				data: positionWinRate,
-				tooltip: {
-					valueSuffix: '°C'
-				}
-			}]
-		})
-		});
-
-
-		$(function () {
-			$('#container-position-lose-rate').highcharts({
-				colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
-				chart: {
-					zoomType: 'xy'
-				},
-				title: {
-					text:''
-				},
-				subtitle: {
-					text: ''
-				},
-
-				credits: {
-				enabled: false //去除水印
-			},
-
-			xAxis: {
-				type: 'category',
-			},
-			xAxis: {
-				max: 3,
-				min: 0,
-				categories: ['东', '南', '西' ,'北']
-			},
-
-		    yAxis: [{ // Primary yAxis
-		    	labels: {
-		    		format: '{value}%',
-		    		style: {
-		    			color: Highcharts.getOptions().colors[1]
-		    		}
-		    	},
-		    	title: {
-		    		text: '输钱概率',
-		    		style: {
-		    			color: Highcharts.getOptions().colors[1]
-		    		}
-		    	}
-		    }, { // Secondary yAxis
-		    	title: {
-		    		text: '输钱',
-		    		style: {
-		    			color: Highcharts.getOptions().colors[1]
-		    		}
-		    	},
-		    	labels: {
-		    		format: '￥{value}',
-		    		style: {
-		    			color: Highcharts.getOptions().colors[1]
-		    		}
-		    	},
-		    	opposite: true
-		    }],
-		    tooltip: {
-		    	shared: true,
-		    	formatter: function () {
-		    		console.log(this.points["0"].y);
-
-					// 此处需要在原data 数组中构造相应数组结构，才能在point 中显示相应的参数
-					return '输的金额: ' + this.points["0"].y+'<br/>'+
-					'输钱概率: ' + this.points["1"].y+'%';
-				}
-
-		        // pointFormat: '胜率: <b>{point.y:.2f}%</b>'
-		    },
-
-		    legend: {
-		    	layout: 'vertical',
-		    	align: 'left',
-		    	x: 10,
-		    	verticalAlign: 'top',
-		    	y: 0,
-		    	floating: true,
-		    	backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
-		    },
-		    series: [{
-		    	// colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#f9573d','#f09aac'],
-		    	name: '输的金额',
-		    	color:'#f22f52',
-		    	type: 'column',
-		    	yAxis: 1,
-		    	data: positionLose,
-		    	tooltip: {
-		    		valueSuffix: ' mm'
-		    	}
-		    }, {
-		    	name: '输钱概率',
-		    	color:'#f09aac',
-		    	type: 'spline',
-		    	data: positionLoseRate,
-		    	tooltip: {
-		    		valueSuffix: '°C'
-		    	}
-		    }]
-		})
-		});
-		$(function(){
-			Highcharts.chart('container-top-total', {
-			chart: {
-				type: 'bar'
-			},
-			title: {
-				text: '2015年1月-5月，各浏览器的市场份额'
-			},
-			subtitle: {
-				text: '点击可查看具体的版本数据，数据来源: <a href="https://netmarketshare.com">netmarketshare.com</a>.'
-			},
-			xAxis: {
-				type: 'category'
-			},
-			yAxis: {
-				title: {
-					text: '总的市场份额'
-				}
-			},
-			legend: {
-				enabled: false
-			},
-			plotOptions: {
-				series: {
-					borderWidth: 0,
-					dataLabels: {
-						enabled: true,
-						format: '{point.y:.1f}%'
-					}
-				}
-			},
-			tooltip: {
-				headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
-				pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b> of total<br/>'
-			},
-			series: [{
-				name: '浏览器品牌',
-				colorByPoint: true,
-				data: [{
-					name: 'Microsoft Internet Explorer',
-					y: 56.33,
-					drilldown: 'Microsoft Internet Explorer'
-				}, {
-					name: 'Chrome',
-					y: 24.03,
-					drilldown: 'Chrome'
-				}, {
-					name: 'Firefox',
-					y: 10.38,
-					drilldown: 'Firefox'
-				}, {
-					name: 'Safari',
-					y: 4.77,
-					drilldown: 'Safari'
-				}, {
-					name: 'Opera',
-					y: 0.91,
-					drilldown: 'Opera'
-				}, {
-					name: 'Proprietary or Undetectable',
-					y: 0.2,
-					drilldown: null
-				}]
-			}],
-			drilldown: {
-				series: [{
-					name: 'Microsoft Internet Explorer',
-					id: 'Microsoft Internet Explorer',
-					data: [
-						[
-							'v11.0',
-							24.13
-						],
-						[
-							'v8.0',
-							-17.2
-						],
-						[
-							'v9.0',
-							8.11
-						],
-						[
-							'v10.0',
-							5.33
-						],
-						[
-							'v6.0',
-							1.06
-						],
-						[
-							'v7.0',
-							0.5
-						]
-					]
-				}, {
-					name: 'Chrome',
-					id: 'Chrome',
-					data: [
-						[
-							'v40.0',
-							5
-						],
-						[
-							'v41.0',
-							4.32
-						],
-						[
-							'v42.0',
-							3.68
-						],
-						[
-							'v39.0',
-							2.96
-						],
-						[
-							'v36.0',
-							2.53
-						],
-						[
-							'v43.0',
-							1.45
-						],
-						[
-							'v31.0',
-							1.24
-						],
-						[
-							'v35.0',
-							0.85
-						],
-						[
-							'v38.0',
-							0.6
-						],
-						[
-							'v32.0',
-							0.55
-						],
-						[
-							'v37.0',
-							0.38
-						],
-						[
-							'v33.0',
-							0.19
-						],
-						[
-							'v34.0',
-							0.14
-						],
-						[
-							'v30.0',
-							0.14
-						]
-					]
-				}, {
-					name: 'Firefox',
-					id: 'Firefox',
-					data: [
-						[
-							'v35',
-							2.76
-						],
-						[
-							'v36',
-							2.32
-						],
-						[
-							'v37',
-							2.31
-						],
-						[
-							'v34',
-							1.27
-						],
-						[
-							'v38',
-							1.02
-						],
-						[
-							'v31',
-							0.33
-						],
-						[
-							'v33',
-							0.22
-						],
-						[
-							'v32',
-							0.15
-						]
-					]
-				}, {
-					name: 'Safari',
-					id: 'Safari',
-					data: [
-						[
-							'v8.0',
-							2.56
-						],
-						[
-							'v7.1',
-							0.77
-						],
-						[
-							'v5.1',
-							0.42
-						],
-						[
-							'v5.0',
-							0.3
-						],
-						[
-							'v6.1',
-							0.29
-						],
-						[
-							'v7.0',
-							0.26
-						],
-						[
-							'v6.2',
-							0.17
-						]
-					]
-				}, {
-					name: 'Opera',
-					id: 'Opera',
-					data: [
-						[
-							'v12.x',
-							0.34
-						],
-						[
-							'v28',
-							0.24
-						],
-						[
-							'v27',
-							0.17
-						],
-						[
-							'v29',
-							0.16
-						]
-					]
-				}]
+				series: killedBy
+				});
 			}
 		});
-		}
-		);
-		$(function () {
-			$('#container-bubble').highcharts({
-				colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
-				legend: {
-					enabled: false,
-				},
-				chart: {
-					type: 'bubble',
-					zoomType: 'xy'
-				},
-				credits: {
-					enabled: false
-				},
-				xAxis: {
-					max: 4,
-					min: 1,
-					categories: ['0','东', '南', '西' ,'北']
-				},
-				yAxis: {
-				// min: 0,
-				title: {
-					enabled: false,
-					text: 'KOG-STAT'
-				},
-			},
-			title: {
-				text: '方位总盈亏'
-			},
-			series: positionStat
-
-		});
-		});
-
-// 根据 data 循环自动显示多个图表
-//     
-// var data ={
-// 	"东" : <?php //echo json_encode($each_position_win[1]);?>,
-// 	"南" : <?php //echo json_encode($each_position_win[2]);?>,
-// 	"西" : <?php //echo json_encode($each_position_win[3]);?>,
-// 	"北" : <?php //echo json_encode($each_position_win[4]);?>,
-// };
-$(function () {
-	for(var temp in data){
-		var div = $('<div style="min-width:400px ,height:400px"></div>');
-		$('#container-test').append(div);
-		div.highcharts({
-			chart: {
-				type: 'column'
-			},
-			title: {
-				text: '对数折线图'
-			},
-			xAxis: {
-				tickInterval: 1
-			},
-			yAxis: {
-				type: 'logarithmic',
-				minorTickInterval: 0.1
-			},
-			tooltip: {
-				headerFormat: '<b>{series.name}</b><br />',
-				pointFormat: 'x = {point.x}, y = {point.y}'
-			},
-			series: [{
-				name:temp,
-				data: data,
-				pointStart: 1
-			}]
-		}
-		);
-	}});
-
-$(function(){
-	var chart = Highcharts.chart('container-duidie', {
-		colors: ['#536bdb', '#1cc7ea', '#f22f52', '#2fc682', '#9055A2','#f09aac'],
-	chart: {
-		type: 'column'
-	},
-	title: {
-		text: '清台榜'
-	},
-	xAxis: {
-		categories: killRankPlayerJson
-	},
-	yAxis: {
-		min: 0,
-		title: {
-			text: '清台总量'
-		},
-		stackLabels: {  // 堆叠数据标签
-			enabled: true,
-			style: {
-				fontWeight: 'bold',
-				color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
-			}
-		}
-	},
-	legend: {
-		align: 'right',
-		x: -30,
-		verticalAlign: 'top',
-		y: 25,
-		floating: true,
-		backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || 'white',
-		borderColor: '#CCC',
-		borderWidth: 1,
-		shadow: false
-	},
-	tooltip: {
-		formatter: function () {
-			return  this.series.name + ': ' + this.y ;
-		}
-	},
-	plotOptions: {
-		column: {
-			stacking: 'normal',
-			dataLabels: {
-				enabled: true,
-				color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
-				style: {
-					// 如果不需要数据标签阴影，可以将 textOutline 设置为 'none'
-					textOutline: '1px 1px black'
-				}
-			}
-		}
-	},
-	series: killedBy
-});
-});
-</SCRIPT>
+	</SCRIPT>
 <script type="text/javascript">
 	function statusChange(value) {
-		//判断是否第一次进入？
 		if (location.href.indexOf('?') == -1) {
 			window.location.href = location.href + "?status=" + value;
 		} else {
-			var prefix = location.href.split('&game_type')[0];//拼接当前的地址
+			var prefix = location.href.split('&game_type')[0];
 			var url = location.href
 			if (value == -1) {
 				window.location.href = prefix;
 			} else {
 				window.location.href = prefix + "&game_type=" + value;
-				// window.location.href = url + "&game_type=" + value;
 			}
 		}
 	}
 	$(document).ready(function() {
-		/* alert("加载完成"); */
 		var value = location.href.split('=')[1];
 		var select = $("#gameType");
 		
 	});	
 	
 	function startYearChange(value) {
-		//判断是否第一次进入？
 		if (location.href.indexOf('?') == -1) {
 			window.location.href = location.href + "?status=" + value;
 		} else {
-			var prefix = location.href.split('&y')[0];//切分url并确保前缀，然后在前缀基础上拼接当前的地址
+			var prefix = location.href.split('&y')[0];
 			var url = location.href
 			if (value == -1) {
 				window.location.href = prefix;
@@ -2501,12 +1955,10 @@ $(function(){
 					window.location.href = prefix + "&y=" + value + "&start_time=" + value + "0101&end_time=" + value + "1231";
 					
 				}
-				// window.location.href = url + "&game_type=" + value;
 			}
 		}
 	}
 	$(document).ready(function() {
-		/* alert("加载完成"); */
 		var value = location.href.split('=')[1];
 		var select = $("#gameType");
 		
@@ -2518,14 +1970,14 @@ $(function(){
 	<div class="container-fluid mt--6">
       	<div class="row justify-content-center">
       		<div class="col-lg-12 card-wrapper ct-example">
-      			<div class="row row-example" style="padding-bottom: 20px;padding-left: 10px;
-    padding-right: 10px;">
-      				<div class="col-3 col-md-2"><a style="color: #ffffff" href="?type=total&y=<?php _e($this_year)?>&md=<?php _e($_REQUEST['md'].$time_zone_str)?>">Overview</a></div>
-      				<div class="col-3 col-md-2"><a style="color: #ffffff" href="?type=detail&y=<?php _e($this_year)?>&md=<?php _e($_REQUEST['md'].$time_zone_str)?>">Details</a></div>
-      				<div class="col-3 col-md-2"><a style="color: #ffffff" href="?type=killrank&y=<?php _e($this_year)?>&md=<?php _e($_REQUEST['md'].$time_zone_str)?>">Killer</a></div>
-      				<div class="col-3 col-md-2"><a style="color: #ffffff" href="?type=lucky&y=<?php _e($this_year)?>&md=<?php _e($_REQUEST['md'].$time_zone_str)?>">Lucky</a></div>
-      				<div class="col-3 col-md-2"><a style="color: #ffffff" href="?type=position&y=<?php _e($this_year)?>&md=<?php _e($_REQUEST['md'].$time_zone_str)?>">Position</a></div>
-      			</div>
+      			    <div class="row row-example" style="padding-bottom: 20px;padding-left: 10px; padding-right: 10px;">
+						<?php $md_link = isset($_REQUEST['md']) ? '&md=' . htmlspecialchars($_REQUEST['md']) : ''; ?>
+						<div class="col-3 col-md-2"><a style="color: #ffffff" href="?type=total&y=<?php _e($this_year)?><?php echo $md_link; ?>">Overview</a></div>
+						<div class="col-3 col-md-2"><a style="color: #ffffff" href="?type=detail&y=<?php _e($this_year)?><?phpecho $md_link; ?>">Details</a></div>
+						<div class="col-3 col-md-2"><a style="color: #ffffff" href="?type=killrank&y=<?php _e($this_year)?><?php echo $md_link; ?>">Killer</a></div>
+						<div class="col-3 col-md-2"><a style="color: #ffffff" href="?type=lucky&y=<?php _e($this_year)?><?php echo $md_link; ?>">Lucky</a></div>
+						<div class="col-3 col-md-2"><a style="color: #ffffff" href="?type=position&y=<?php _e($this_year)?><?php echo $md_link; ?>">Position</a></div>
+					</div>
       			
 		
 		<?php if(!isset($if_data)):?>
@@ -2533,11 +1985,9 @@ $(function(){
 				<?php if($_REQUEST['type'] == "total" && !empty($winer_rate)):?>
 					
 				<div class="card">
-	            <!-- Card header -->
 		            <div class="card-header">
 			              <div class="row align-items-center">
 				                <div class="col-7">
-				                  <!-- Title -->
 				                  <h5 class="h3 mb-0"><?php _e($time_zone.":".game_type_array($game_type))?> &nbsp 总成本：<?php _e(round($total_cost,0))?>	</h5>
 				                </div>
 				                 <div class="col-5 text-right">
@@ -2550,20 +2000,9 @@ $(function(){
 				                    </select>
 
 				                </div>
-				                <!--
-				                <div class="col-5 text-right">
-				                  <select class="form-control" id="gameType" name="gameType" onchange="statusChange(this.value)">
-				                     <option <?php _e(test_js("all"))?> value="all">现金 OR 排位?</option>
-											<option <?php _e(test_js("cash"))?> value="cash">现金局</option>
-											<option <?php _e(test_js("sng"))?> value="sng">排位赛</option>
-											<option <?php _e(test_js("all"))?> value="all">全部场次</option>
-				                    </select>		                  
-				                </div>
-				                /-->
-			              </div>
+				              </div>
 		            </div>
 
-		            <!-- Card body -->
 		            <div class="table-responsive">
 				        <table id="stattable" class="table align-items-center table-flush table-striped">
 				            <thead class="thead-light">
@@ -2624,7 +2063,6 @@ $(function(){
 				    </div>
 				    <div class="card-body " style="padding-left: 0;padding-right: 0">
 				        <div id="container-fuqian"></div>
-				        <!-- <div id="container-kill" style="min-width:300;"></div> -->
 				    </div>
 		   		</div>
 			    <div class="card">
@@ -2657,7 +2095,6 @@ $(function(){
 				    </div>
 			    </div>
 	
-					
 				<div id="container-winer" style="float: left; width: 100%; min-width:300px;height:300px;display: none"></div>
 				
 				
@@ -2690,7 +2127,6 @@ $(function(){
 				    </div>
 				    <div class="card-body " style="padding-left: 0;padding-right: 0">
 				        <div id="container-duidie" style="min-width:300px"></div>
-				        <!-- <div id="container-kill" style="min-width:300;"></div> -->
 				    </div>
 		   		</div>
 		   		<div class="card" >
@@ -2699,7 +2135,6 @@ $(function(){
 				    </div>
 				    <div class="card-body " style="padding-left: 0;padding-right: 0">
 				        <div id="container-hexuan"></div>
-				        <!-- <div id="container-kill" style="min-width:300;"></div> -->
 				    </div>
 		   		</div>
 
@@ -3031,16 +2466,12 @@ $(document).ready(function() {
       if (result.value) {
         let cost = result.value;
         let memo = "<?php echo $game_memo; ?>";
-        // console.log('成本:', cost);
-        // console.log('Memo:', memo);
         $.ajax({
           url: 'kog_addcost.php',
           type: 'POST',
           data: { cost: cost, memo: memo },
           success: function(response) {
-          	// console.log('服务器返回的数据:', response);
            	Swal.fire('成功', response, 'success').then(function() {
-      				// 在弹窗点击确定后执行跳转
      				 	window.location.href = 'stat.php?type=total&md='+memo;
    					 });
           },

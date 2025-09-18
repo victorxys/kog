@@ -10,7 +10,8 @@ require_once(PATH . 'wp-blog-header.php');
 // require_once('telegram_webhook.php');
 
 // get_header('nonav');
-error_reporting(E_ALL);
+// Suppress deprecation warnings for older WordPress code on newer PHP
+error_reporting(E_ALL & ~E_DEPRECATED);
 ini_set('display_errors', '1');
 
 // test();
@@ -731,7 +732,7 @@ function get_kill_info($game_memo=null,$start_time=null, $end_time=null, $game_t
 		$sql = $sql.' and g.game_type like '."'".$game_type."'";
 	}
 	$kill_info 	= 	$wpdb->get_results($sql);
-	$kill_info_conut = null;
+	$kill_info_conut = array();
 	if (is_array($kill_info)) {
 		foreach ($kill_info as $key => $value) {
 			$kill_info_conut['killed'][$value->killed_by][$value->uid] = isset($kill_info_conut['killed'][$value->killed_by][$value->uid])?$kill_info_conut['killed'][$value->killed_by][$value->uid]+1:1;
@@ -1566,6 +1567,7 @@ function get_lucky_bonus($key = null){
 // 获取指定时间后的 lucky 详情
 function get_lucky_info($start_time){
 	global $wpdb;
+	$info_order = array();
 	$start_time = strtotime($start_time);
 	// $sql = "select * from  ".$wpdb->prefix ."kog_lucky where `created_at`>= ".$start_time;
 	// 只去game status <> 0 的
@@ -1793,6 +1795,9 @@ function creat_game(){
 		// 插入盲注级别到 meta表中，用来自动检测
 		insert_game_meta_by_arr($gid,$meta_date);
 	}
+	var_dump($game_data);
+	var_dump($meta_date);
+	exit;
 	return $gid;
 }
 
