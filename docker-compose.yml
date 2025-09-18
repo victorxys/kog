@@ -1,20 +1,6 @@
 version: "3.7"
 
 services:
-  nginx:
-    image: nginx:latest
-    container_name: kog-nginx
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./nginx/ssl:/etc/nginx/ssl
-      - ./acme_challenge:/var/www/acme
-    depends_on:
-      - web
-
   web:
     build: .
     container_name: kog-web
@@ -24,6 +10,26 @@ services:
       - ./apache.conf:/etc/apache2/sites-available/000-default.conf
     depends_on:
       - db
+    networks:
+      - default
+      - tesla_default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=tesla_default"
+      # HTTP Router: Redirect to HTTPS
+      - "traefik.http.routers.kog-http.rule=Host(`allin.victorxys.top`)"
+      - "traefik.http.routers.kog-http.entrypoints=web"
+      - "traefik.http.routers.kog-http.middlewares=kog-redirect-scheme"
+      # HTTPS Router: Main service
+      - "traefik.http.routers.kog-https.rule=Host(`allin.victorxys.top`)"
+      - "traefik.http.routers.kog-https.entrypoints=websecure"
+      - "traefik.http.routers.kog-https.tls=true"
+      - "traefik.http.routers.kog-https.tls.certresolver=tmhttpchallenge"
+      - "traefik.http.routers.kog-https.service=kog-service"
+      # Middleware: Redirect Scheme
+      - "traefik.http.middlewares.kog-redirect-scheme.redirectscheme.scheme=https"
+      # Service Definition
+      - "traefik.http.services.kog-service.loadbalancer.server.port=80"
 
   db:
     image: mariadb:10.6
@@ -31,9 +37,6 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: kog_production
-      MYSQL_USER: root
-      MYSQL_PASSWORD: xys131313
     volumes:
       - db_data:/var/lib/mysql
       - ./docker/mysql_init:/docker-entrypoint-initdb.d
@@ -52,15 +55,10 @@ services:
     depends_on:
       - db
 
-  acme:
-    image: neilpang/acme.sh
-    container_name: kog-acme
-    restart: always
-    volumes:
-      - ./nginx/ssl:/acme.sh/out
-      - ./acme_challenge:/var/www/acme
-      - /var/run/docker.sock:/var/run/docker.sock
-    command: daemon
-
 volumes:
   db_data:
+
+networks:
+  default:
+  tesla_default:
+    external: true
