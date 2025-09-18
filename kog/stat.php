@@ -258,7 +258,7 @@ switch ($_REQUEST['type']) {
 	break;
 
 	case 'lucky':
-		$lucky_info = get_lucky_info($start_time,$end_time);
+		$lucky_info = get_lucky_info($start_time,$game_memo);
 	break;
 
 	case 'killrank':
@@ -1973,7 +1973,7 @@ switch ($_REQUEST['type']) {
       			    <div class="row row-example" style="padding-bottom: 20px;padding-left: 10px; padding-right: 10px;">
 						<?php $md_link = isset($_REQUEST['md']) ? '&md=' . htmlspecialchars($_REQUEST['md']) : ''; ?>
 						<div class="col-3 col-md-2"><a style="color: #ffffff" href="?type=total&y=<?php _e($this_year)?><?php echo $md_link; ?>">Overview</a></div>
-						<div class="col-3 col-md-2"><a style="color: #ffffff" href="?type=detail&y=<?php _e($this_year)?><?phpecho $md_link; ?>">Details</a></div>
+						<div class="col-3 col-md-2"><a style="color: #ffffff" href="?type=detail&y=<?php _e($this_year)?><?php echo $md_link; ?>">Details</a></div>
 						<div class="col-3 col-md-2"><a style="color: #ffffff" href="?type=killrank&y=<?php _e($this_year)?><?php echo $md_link; ?>">Killer</a></div>
 						<div class="col-3 col-md-2"><a style="color: #ffffff" href="?type=lucky&y=<?php _e($this_year)?><?php echo $md_link; ?>">Lucky</a></div>
 						<div class="col-3 col-md-2"><a style="color: #ffffff" href="?type=position&y=<?php _e($this_year)?><?php echo $md_link; ?>">Position</a></div>

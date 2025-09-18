@@ -108,20 +108,24 @@ switch ($_REQUEST['action']) {
 	case 'creat_game':
 
 	if($gid = creat_game()){
+		// echo "获取id".$gid;die;
 		$url = "kog_detail.php?page_name=Have Fun !&gid=".$gid;
 		// echo '<script>alert("Ok Dealer!");location.href="'.$url.'"</script>';
 		echo '
 			<script type="text/javascript">
-				swal({
-					        title:"Ok Let\'s All",
-					        icon:"success",
-					        text: "Success",
-					        type: "success",
-					        
-					    }).then(function () {
-					        window.location.href = "'.$url.'"
-					    })
-
+			document.addEventListener("DOMContentLoaded", function() {
+				Swal.fire({
+					title: "Success",
+					text: "Ok Let\'s All",
+					icon: "success",
+					timer: 2000,
+					timerProgressBar: true,
+					showConfirmButton: false
+				}).then((result) => {
+					/* 定时器结束后或者用户意外关闭弹窗后都会跳转 */
+					window.location.href = ' . json_encode($url) . ';
+				});
+			});
 			</script>
 		';
 
@@ -269,7 +273,7 @@ switch ($_REQUEST['action']) {
 								<div class="col-md-10">
 									<?php erp_html_form_input( array(
 										'name'    => 'position['.$i.']',
-										'class'   => 'form-control',
+										'class'   => 'form-control player-select',
 										'type'    => 'select',
 										'required' => true,
 										'options' => array( '' => '- Select -' ) + $player_name_array
@@ -295,7 +299,7 @@ switch ($_REQUEST['action']) {
 							<div class="col-md-10">
 								<?php erp_html_form_input( array(
 									'name'    => 'position['.$i.']',
-									'class'   => 'form-control',
+									'class'   => 'form-control player-select',
 									'type'    => 'select',
 									'required' => true,
 									'options' => array( '' => '- Select -' ) + $player_name_array
@@ -340,6 +344,51 @@ switch ($_REQUEST['action']) {
 	<div class="row align-items-center justify-content-lg-between"></div>
 </footer>
 </form>					
+<script>
+$(document).ready(function() {
+    // The main function to update all player dropdowns
+    function updatePlayerDropdowns() {
+        var selectedPlayers = [];
+        // First, find all players that are currently selected
+        $('.player-select').each(function() {
+            var selectedValue = $(this).val();
+            if (selectedValue && selectedValue !== '') {
+                selectedPlayers.push(selectedValue);
+            }
+        });
+
+        // Now, iterate over each dropdown again to update its options
+        $('.player-select').each(function() {
+            var ownSelection = $(this).val(); // The value of the current dropdown
+            $(this).find('option').each(function() {
+                var optionValue = $(this).val();
+                if (optionValue === '') {
+                    // Always show the "- Select -" option
+                    $(this).prop('disabled', false).show();
+                    return; // continue to next option
+                }
+
+                // Check if this option's value is in the list of selected players
+                // AND it's not the value selected by this dropdown itself
+                if (selectedPlayers.includes(optionValue) && optionValue !== ownSelection) {
+                    $(this).prop('disabled', true).hide(); // Disable and hide for better UX
+                } else {
+                    $(this).prop('disabled', false).show(); // Enable and show
+                }
+            });
+        });
+    }
+
+    // Attach the event listener to the document for any change on '.player-select'
+    $(document).on('change', '.player-select', function() {
+        updatePlayerDropdowns();
+    });
+
+    // Initial call to set the state correctly on page load
+    // (e.g., if the browser autofills the form after a 'back' button press)
+    updatePlayerDropdowns();
+});
+</script>
 </body>
 
 </html>
