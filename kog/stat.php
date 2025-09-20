@@ -535,12 +535,9 @@ require_once("kog_header.php");
 <script src="https://code.highcharts.com/12.4.0/modules/exporting.js"></script>
 <script src="https://code.highcharts.com/12.4.0/modules/sankey.js"></script>
 <script src="https://code.highcharts.com/12.4.0/modules/dependency-wheel.js"></script>
-<script src="https://code.highcharts.com/highcharts/modules/drilldown.js"></script>
-<script src="https://code.highcharts.com/12.4.0/modules/oldie.js"></script>
+<script src="https://code.highcharts.com/modules/drilldown.js"></script>
 <script src="https://code.highcharts.com/i18n/zh-CN.js"></script>
-<script 
-  src="https://code.highcharts.com/12.4.0/modules/accessibility.js"></script>
-
+<script src="https://code.highcharts.com/12.4.0/modules/accessibility.js"></script>
 <script type="text/javascript">
     $(function () {
         <?php
