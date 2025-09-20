@@ -1,24 +1,42 @@
-version: "3"
+version: "3.7"
 
 services:
   web:
     build: .
-    ports:
-      - "8080:80"
+    container_name: kog-web
+    restart: always
     volumes:
       - .:/var/www/html
       - ./apache.conf:/etc/apache2/sites-available/000-default.conf
     depends_on:
       - db
+    networks:
+      - default
+      - tesla_default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=tesla_default"
+      # HTTP Router: Redirect to HTTPS
+      - "traefik.http.routers.kog-http.rule=Host(`allin.victorxys.top`)"
+      - "traefik.http.routers.kog-http.entrypoints=web"
+      - "traefik.http.routers.kog-http.middlewares=kog-redirect-scheme"
+      # HTTPS Router: Main service
+      - "traefik.http.routers.kog-https.rule=Host(`allin.victorxys.top`)"
+      - "traefik.http.routers.kog-https.entrypoints=websecure"
+      - "traefik.http.routers.kog-https.tls=true"
+      - "traefik.http.routers.kog-https.tls.certresolver=tmhttpchallenge"
+      - "traefik.http.routers.kog-https.service=kog-service"
+      # Middleware: Redirect Scheme
+      - "traefik.http.middlewares.kog-redirect-scheme.redirectscheme.scheme=https"
+      # Service Definition
+      - "traefik.http.services.kog-service.loadbalancer.server.port=80"
 
   db:
     image: mariadb:10.6
+    container_name: kog-db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: xys131313
-      MYSQL_DATABASE: kog_production
-      MYSQL_USER: root
-      MYSQL_PASSWORD: xys131313
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
       - db_data:/var/lib/mysql
       - ./docker/mysql_init:/docker-entrypoint-initdb.d
@@ -27,6 +45,7 @@ services:
 
   phpmyadmin:
     image: phpmyadmin:5.2
+    container_name: kog-phpmyadmin
     restart: always
     ports:
       - "8081:80"
@@ -38,3 +57,8 @@ services:
 
 volumes:
   db_data:
+
+networks:
+  default:
+  tesla_default:
+    external: true
