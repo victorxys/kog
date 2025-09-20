@@ -65,7 +65,7 @@ foreach ($game_player as $key => $value) {
 		padding-bottom: 5px;
 		border-top-style: solid;
 		border-color: #8a8a8a;
-		border-width: 1px
+		border-width: 1px;
 		padding-right:5px;
 		padding-left: 5px;
 	}
@@ -181,32 +181,52 @@ foreach ($game_player as $key => $value) {
 if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'rebuy') {
 	if(creat_rebuy_info($_REQUEST['uid'])){
 		$url = "kog_detail.php?gid=".$_REQUEST['gid'];
-			echo '<script>
-				swal({
-					        title:"Success",
-					        icon:"success",
-					        text: "Let\'s all in again!",
-					    }).then(function () {
-					        window.location.href = "'.$url.'"
-					    })
-			</script>';
+			echo '
+				<script type="text/javascript">
+				document.addEventListener("DOMContentLoaded", function() {
+					Swal.fire({
+						title: "Success",
+						text: "Let\'s all in again!",
+						icon: "success",
+						timer: 2000,
+						timerProgressBar: true,
+						showConfirmButton: false
+					}).then((result) => {
+						/* 定时器结束后或者用户意外关闭弹窗后都会跳转 */
+						window.location.href = ' . json_encode($url) . ';
+					});
+				});
+				</script>
+			';
 	}
 }
 if (isset($_REQUEST['rebuy_id'])) {
 	
 		$url = "kog_detail.php?gid=".$_REQUEST['gid'];
-			echo '<script>
-				swal({
-					        title:"Success",
-					        icon:"success",
-					        text: "Rebuy clear!",
-					    }).then(function () {
-					        window.location.href = "'.$url.'"
-					    })
-			</script>';
+		$swal_script = `
+			<script type="text/javascript">
+				document.addEventListener("DOMContentLoaded", function() {
+					Swal.fire({
+						title: "Success",
+						text: "Rebuy clear!",
+						icon: "success",
+						timer: 2000,
+						timerProgressBar: true,
+						showConfirmButton: false
+					}).then((result) => {
+						/* 定时器结束后或者用户意外关闭弹窗后都会跳转 */
+						window.location.href = ' . json_encode($url) . ';
+					});
+				});
+				</script>
+		`;
 }
 ?>
-
-
+<?php 
+if (isset($swal_script)) {
+    echo $swal_script;
+}
+require_once "kog_footer.php";
+?>
 
 </html>

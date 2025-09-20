@@ -1174,7 +1174,7 @@ function get_game_memo_list($y=null,$memo=null,$end_y=null){
 			$time_y_end = mktime(23,59,59,12,31,$y);	
 		}
 		if(isset($time_y_end)){
-			$sql 	= $sql . " and start_time >= '".$time_y."' and end_time <= '".$time_y_end."'";	
+			$sql     = $sql . " and start_time >= '".$time_y."' and (end_time <= '".$time_y_end."' OR end_time IS NULL)";
 		}else{
 			$sql 	= $sql . " and start_time >= '".$time_y."'";
 		}
@@ -1187,7 +1187,7 @@ function get_game_memo_list($y=null,$memo=null,$end_y=null){
 	// 	$sql = $sql. " and id = '".$gid."'";
 	// }
 	// echo "<pre>";
-	// var_dump ($end_y);
+	// var_dump ($sql);
 	// exit;
 	$sql = $sql . " ORDER BY start_time asc";
 	$res 	= 	$wpdb->get_results($sql);
@@ -1565,27 +1565,41 @@ function get_lucky_bonus($key = null){
 }
 
 // 获取指定时间后的 lucky 详情
-function get_lucky_info($start_time){
+function get_lucky_info($start_time, $game_memo){
 	global $wpdb;
 	$info_order = array();
-	$start_time = strtotime($start_time);
+	// $start_time = strtotime($start_time);
+	// echo $start_time;die;
 	// $sql = "select * from  ".$wpdb->prefix ."kog_lucky where `created_at`>= ".$start_time;
 	// 只去game status <> 0 的
-	$sql = "SELECT
-	".$wpdb->prefix ."kog_games.`status`, 
-	".$wpdb->prefix ."kog_games.`rebuy_rate`/".$wpdb->prefix ."kog_games.`chips_level` * ".$wpdb->prefix."kog_lucky.`bonus`as money, 
-	".$wpdb->prefix ."kog_lucky.*, 
-	".$wpdb->prefix ."kog_games.id
-	FROM
-	".$wpdb->prefix ."kog_games
-	INNER JOIN
-	".$wpdb->prefix ."kog_lucky
-	ON 
-		".$wpdb->prefix ."kog_games.id = ".$wpdb->prefix ."kog_lucky.gid
-	WHERE
-	".$wpdb->prefix ."kog_games.`status` <> 0 
-	AND ".$wpdb->prefix ."kog_lucky.created_at>= ".$start_time;
+	// 基础 SQL 查询
+	$sql = "
+			SELECT
+					g.status,
+					g.rebuy_rate / g.chips_level * l.bonus AS money,
+					l.*,
+					g.id
+			FROM
+	{$wpdb->prefix}kog_games AS g
+			INNER JOIN
+	{$wpdb->prefix}kog_lucky AS l ON g.id = l.gid
+			WHERE
+					g.status > 0
+	";
 
+	// 按开始时间过滤
+	if (!empty($start_time)) {
+	$start_timestamp = strtotime($start_time);
+	if ($start_timestamp) {
+	$sql .= " AND l.created_at >= " . intval($start_timestamp);
+			}
+	}
+
+	// 按单场游戏过滤
+	if (!is_null($game_memo)) {
+	$sql .= " AND g.memo = '" . esc_sql($game_memo) . "'";
+	}
+	// echo $sql;die;
 	$res = $wpdb->get_results($sql);
 	$lucky_type = get_lucky_bonus();
 
@@ -1795,9 +1809,9 @@ function creat_game(){
 		// 插入盲注级别到 meta表中，用来自动检测
 		insert_game_meta_by_arr($gid,$meta_date);
 	}
-	var_dump($game_data);
-	var_dump($meta_date);
-	exit;
+	// var_dump($game_data);
+	// var_dump($meta_date);
+	// exit;
 	return $gid;
 }
 
