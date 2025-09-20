@@ -65,7 +65,7 @@ foreach ($game_player as $key => $value) {
 		padding-bottom: 5px;
 		border-top-style: solid;
 		border-color: #8a8a8a;
-		border-width: 1px
+		border-width: 1px;
 		padding-right:5px;
 		padding-left: 5px;
 	}
@@ -203,8 +203,8 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'rebuy') {
 if (isset($_REQUEST['rebuy_id'])) {
 	
 		$url = "kog_detail.php?gid=".$_REQUEST['gid'];
-			echo '
-				<script type="text/javascript">
+		$swal_script = `
+			<script type="text/javascript">
 				document.addEventListener("DOMContentLoaded", function() {
 					Swal.fire({
 						title: "Success",
@@ -219,10 +219,14 @@ if (isset($_REQUEST['rebuy_id'])) {
 					});
 				});
 				</script>
-			';
+		`;
 }
 ?>
-
-
+<?php 
+if (isset($swal_script)) {
+    echo $swal_script;
+}
+require_once "kog_footer.php";
+?>
 
 </html>
