@@ -530,16 +530,16 @@ require_once("kog_header.php");
 
 <?php require_once("kog_footer.php"); ?>
 
-<script src="https://code.highcharts.com/10.3.2/highcharts.js"></script>
-<script src="https://code.highcharts.com/10.3.2/highcharts-more.js"></script>
-<script src="https://code.highcharts.com/10.3.2/modules/exporting.js"></script>
-<script src="https://code.highcharts.com/10.3.2/modules/sankey.js"></script>
-<script src="https://code.highcharts.com/10.3.2/modules/dependency-wheel.js"></script>
+<script src="https://code.highcharts.com/12.4.0/highcharts.js"></script>
+<script src="https://code.highcharts.com/12.4.0/highcharts-more.js"></script>
+<script src="https://code.highcharts.com/12.4.0/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/12.4.0/modules/sankey.js"></script>
+<script src="https://code.highcharts.com/12.4.0/modules/dependency-wheel.js"></script>
 <script src="https://code.highcharts.com/highcharts/modules/drilldown.js"></script>
-<script src="https://code.highcharts.com/10.3.2/modules/oldie.js"></script>
+<script src="https://code.highcharts.com/12.4.0/modules/oldie.js"></script>
 <script src="https://code.highcharts.com/i18n/zh-CN.js"></script>
 <script 
-  src="https://code.highcharts.com/10.3.2/modules/accessibility.js"></script>
+  src="https://code.highcharts.com/12.4.0/modules/accessibility.js"></script>
 
 <script type="text/javascript">
     $(function () {
