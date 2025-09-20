@@ -3,11 +3,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 <!--
 =========================================================
-* Argon Dashboard 3 - v2.1.0
+* Argon Dashboard 2 - v2.0.4
 =========================================================
 
 * Product Page: https://www.creative-tim.com/product/argon-dashboard
-* Copyright 2024 Creative Tim (https://www.creative-tim.com)
+* Copyright 2022 Creative Tim (https://www.creative-tim.com)
 * Licensed under MIT (https://www.creative-tim.com/license)
 * Coded by Creative Tim
 
@@ -38,29 +38,38 @@ $current_page = basename($_SERVER['PHP_SELF']);
   <!-- CSS Files -->
   <link id="pagestyle" href="assets/css/argon-dashboard.css?v=2.1.0" rel="stylesheet" />
   <style>
-    .badge.bg-gradient-success, .badge-success {
-        color: rgb(26, 174, 111) !important;
-        background-color: rgb(176, 238, 211) !important;
-        background-image: none !important;
+    .badge.bg-gradient-success,
+    .badge-success {
+      color: rgb(26, 174, 111) !important;
+      background-color: rgb(176, 238, 211) !important;
+      background-image: none !important;
     }
-    .badge.bg-gradient-danger, .badge-danger {
-        color: #f80031 !important;
-        background-color: #fdd1da !important;
-        background-image: none !important;
+
+    .badge.bg-gradient-danger,
+    .badge-danger {
+      color: #f80031 !important;
+      background-color: #fdd1da !important;
+      background-image: none !important;
     }
+
     .badge.bg-gradient-secondary {
-        background-color: #e9ecef !important;
-        color: #6c757d !important;
-        background-image: none !important;
+      background-color: #e9ecef !important;
+      color: #6c757d !important;
+      background-image: none !important;
     }
+
     .horizontal-scroll-wrapper {
-        overflow-x: auto;
-        white-space: nowrap;
-        -ms-overflow-style: none;  /* IE and Edge */
-        scrollbar-width: none;  /* Firefox */
+      overflow-x: auto;
+      white-space: nowrap;
+      -ms-overflow-style: none;
+      /* IE and Edge */
+      scrollbar-width: none;
+      /* Firefox */
     }
+
     .horizontal-scroll-wrapper::-webkit-scrollbar {
-        display: none; /* Chrome, Safari, Opera */
+      display: none;
+      /* Chrome, Safari, Opera */
     }
   </style>
 </head>
@@ -110,8 +119,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl " id="navbarBlur" data-scroll="false">
       <div class="container-fluid py-1 px-3">
         <div class="d-flex align-items-center">
-            <h6 class="font-weight-bolder text-white mb-0"><?php echo isset($page_title) ? $page_title : 'Dashboard'; ?></h6>
-            <a class="btn btn-primary btn-sm ms-3 mb-0" href="kog.php" type="button">New Game</a>
+          <h6 class="font-weight-bolder text-white mb-0"><?php echo isset($page_title) ? $page_title : 'Dashboard'; ?></h6>
+          <a class="btn btn-primary btn-sm ms-3 mb-0" href="kog.php" type="button">New Game</a>
         </div>
         <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
           <div class="ms-md-auto pe-md-3 d-flex align-items-center">
