@@ -45,3 +45,5 @@ node_modules/
 
 # 其他可能的目录，比如用户上传的文件
 uploads/
+
+gitpull.sh
