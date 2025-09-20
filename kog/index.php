@@ -1,6 +1,5 @@
 <?php
-// echo 'Current PHP version: ' . phpversion();
-// exit;
+$page_title = 'Game List';
 require_once('functions.php'); 
 $y= isset($_REQUEST['y'])?$_REQUEST['y']:date('Y');
 date_default_timezone_set("PRC");
@@ -37,245 +36,123 @@ if (isset($game_memo_list['memo_total']['duration']) && is_array($game_memo_list
 	// echo "暂无今年数据，请新建游戏";
 }
 
-// echo "<pre>";
-// var_dump($game_memo_list['memo_total']);
-// exit;
+require_once('kog_header.php');
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Game List</title>
-	<link rel="stylesheet" type="text/css" href="assets/css/style.css">
-	<link rel="stylesheet" type="text/css" href="assets/css/bootstrap.min.css">
-	<link rel="stylesheet" type="text/css" href="style.css">
 
-	<style type="text/css">
-	a{
-		color: #000;
-	}
-	.cell1-3{
-		float: left;
-		width: 33%;
-		text-align: center;
-	}
-	.row-full-table{
-		float: left;
-		width: 100%;
-		text-align: center;
-		padding-bottom: 5px;
-		padding-left: 5px;
-	}
-	.row-full-win{
-		float: left;
-		width: 100%;
-		text-align: center;
-		padding-bottom: 5px;
-		font-size: 1.5em;
+<div class="container-fluid py-4">
+      <div class="row">
+        <div class="col-12">
+          <div class="card mb-4">
+            <div class="card-header pb-0">
+              <div class="d-flex justify-content-between">
+                <h6 class="mb-2">Game List</h6>
+                  <div class="col-5 text-right">
+	                  <select class="form-control" id="start_year" name="start_year" onchange="startYearChange(this.value)">
+	                  	<option select="selected" value=<?php _e($this_year)?>>今年</option>
+						<?php foreach ($game_year_list as $key => $value): ?>
+							<option <?php _e(test_js($value))?> value=<?php _e($value)?> ><?php _e($value)?></option>
+						<?php endforeach ?>	
+						<option <?php _e(test_js('all'))?> value="all">全部</option>		                    
+	                    </select>	                  
+	                </div>
+              </div>
+            </div>
+            <div class="card-body px-0 pt-0 pb-2">
+              <div class="table-responsive p-0">
+                <table class="table align-items-center mb-0">
+                  <thead>
+                    <tr>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">#</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Date</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Games</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Result</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Duration</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  <?php if (isset($game_memo_list['memo_total']['duration']) && is_array($game_memo_list['memo_total']['duration'])): ?>
+                    <?php $i = 0; ?>
+			            	<?php foreach($game_memo_list['memo_total']['duration'] as $key=>$value):?>
+                      <?php $i++; ?>
+                      <tr>
+                        <td>
+                          <div class="d-flex px-3 py-1">
+                            <div class="d-flex flex-column justify-content-center">
+                              <h6 class="mb-0 text-sm"><?php _e($i)?></h6>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <p class="text-xs font-weight-bold mb-0"><a href=kog_summary.php?memo=<?php _e($key)?>><?php _e($key)?></a></p>
+                        </td>
+                        <td class="align-middle text-center text-sm">
+                          <span class="text-secondary text-xs font-weight-bold"><?php _e($game_memo_list['memo_total']['count_games'][$key])?></span>
+                        </td>
+                        <td class="align-middle">
+                            <div class="d-flex justify-content-start">
+                              <?php 
+                                $cost = get_cost($key,null,'total');
+                                if (!empty($cost) && isset($cost)) {
+                                  echo "<span class='badge badge-sm bg-gradient-secondary m-1'>
+                                        成本:".$cost."
+                                      </span>";
+                                }
+                                
+                                foreach($game_memo_list['memo_total']['player_info'][$key] as $k=>$val){
+                                  if ($val->total_fact >=0) {
+                                    echo "
+                                    <span class='badge badge-sm badge-success m-1'>".$val->player.":".$val->total_fact."</span>
+                                    ";
+                                  }else{
+                                    echo "
+                                    <span class='badge badge-sm badge-danger m-1'>".$val->player.":".$val->total_fact."</span>
+                                    ";
+                                  }
+                                }
+                              ?>
+                            </div>
+                        </td>
+                        <td class="align-middle text-center">
+                          <span class="text-secondary text-xs font-weight-bold">
+                              <?php 
+                                $duration = $value/3600;
+                                if ($duration >= 1) {
+                                  $duration = round(($value/3600),1)." H";
+                                }else{
+                                  $duration = round(($value/60),1)." Min";
+                                }
+                                echo $duration;
+                              ?>
+                          </span>
+                        </td>
+                      </tr>
+                    <?php endforeach?>
+			            	<?php endif ?>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-	}
-	.row-full-bottom{
-		float: left;
-		width: 100%;
-		text-align: center;
-		padding-bottom: 5px;
-		border-bottom-style: solid;
-		border-bottom-width: 1px;
-		font-size: 1.5em;
+      <footer class="footer pt-3">
+      </footer>
 
-	}
-	
-	.row-full-boder-bottom{
-		float: left;
-		width: 100%;
-		text-align: center;
-		padding-bottom: 5px;
-		border-top-style: solid;
-		border-color: #8a8a8a;
-		border-width: 1px
-		padding-right:5px;
-		padding-left: 5px;
-	}
-	.cell1-5{
-		float: left;
-		width: 20%;
-		line-height: 82px;
-	}
-	.cell3-5{
-		float: left;
-		width: 60%;
-	}
-	.content{
-		padding-top: 20px;
-	}
-	.cell1-5-heigh{
-		float: left;
-		width: 20%;
-		line-height:30px;
-	}
-	.cell1-5-heigh-content{
-		float: left;
-		width: 20%;
-		line-height:30px;
-		color: #999;
-	}
-	.cell2-5-heigh-content{
-		float: left;
-		width: 40%;
-		line-height:30px;
-		color: #999;
-	}
-	.div-1-2{
-		float: left;
-		width: 50%;
-	}
-	.div-1-4-title{
-		float: left;
-		width: 25%;
-		text-align: right;
-		color: #ccc;
-	}
-	.div-1-4-content{
-		float: left;
-		width: 25%;
-		text-align: left;
-		padding-left: 10px;
-		color: #ccc;
-	}
-	.div-3-4-content{
-		float: left;
-		width: 75%;
-		text-align: left;
-		padding-left: 10px;
-		color: #ccc;
-	}
-</style>
+</div>
+
 <script type="text/javascript">
 	function startYearChange(value) {
-		//判断是否第一次进入？
 		if (location.href.indexOf('?') == -1) {
-			window.location.href = location.href + "?status=" + value;
+			window.location.href = location.href + "?y=" + value;
 		} else {
-			var prefix = location.href.split('&y')[0];//切分url并确保前缀，然后在前缀基础上拼接当前的地址
-			var url = location.href
-			if (value == -1) {
-				window.location.href = prefix;
-			} else {
-				if (value == 'all'){
-					window.location.href = prefix + "&y=all&end_y=no";
-				}else{
-					window.location.href = prefix + "&y=" + value ;
-					
-				}
-				// window.location.href = url + "&game_type=" + value;
-			}
+            let currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('y', value);
+            window.location.href = currentUrl.href;
 		}
 	}
 </script>
-</head>
-<?php require_once "kog_header.php";?>
-<body>
-	<div class="container-fluid mt--6">
-      	<div class="row justify-content-center">
-	        <div class="col-lg-12 card-wrapper ct-example">
-	        	<div class="card">
-	            <div class="card-header">
-			              <div class="row align-items-center">
-				                <div class="col-7">
-				                  <!-- Title -->
-				                  <h5 class="h3 mb-0">Game List</h5>
-				                </div>
-				                 <div class="col-5 text-right">
-				                  <select class="form-control" id="start_year" name="start_year" onchange="startYearChange(this.value)">
-				                  	<option select="selected" value=<?php _e($this_year)?>>今年</option>
-									<?php foreach ($game_year_list as $key => $value): ?>
-										<option <?php _e(test_js($value))?> value=<?php _e($value)?> ><?php _e($value)?></option>
-									<?php endforeach ?>	
-									<option <?php _e(test_js('all'))?> value="all">全部</option>		                    
-				                    </select>		                  
-				                </div>
-			              </div>
-		            </div>
-	            <div class="table-responsive">
-			        <table class="table align-items-center table-flush table-striped">
-			            <thead class="thead-light">
-				              <tr>
-			               			<th>#</th>
-			               			<th>Date</th>
-									<th>Games</th>
-									<th>Result</th>
-									<th>Duration</th>
-				              </tr>
-			            </thead>
-			            <tbody>
-			            	<?php if (isset($game_memo_list['memo_total']['duration']) && is_array($game_memo_list['memo_total']['duration'])): ?>
-				            	<?php foreach($game_memo_list['memo_total']['duration'] as $key=>$value):?>
-									<?php $i = isset($i)?$i+1:1 ?>
-									
-										<tr>
-											<td class="tdtxt-weight"><?php _e($i)?></td>
-											<td class="tdtxt-weight"><a href=kog_summary.php?memo=<?php _e($key)?>><?php _e($key)?></a></td>
-											<td class="tdtxt"><?php _e($game_memo_list['memo_total']['count_games'][$key])?></td>
-											<td class="tdtxt" style="text-align:left;">
-												
-												<?php 
-												$cost = get_cost($key,null,'total');
-												if (!empty($cost) && isset($cost)) {
-													echo "<span  class='badge badge-pill badge-default'>
-								                    	成本:".$cost."
-								                    </span>";
-												}
-												
-												foreach($game_memo_list['memo_total']['player_info'][$key] as $k=>$val){
-													if ($val->total_fact >=0) {
-														echo "
-														<span class='badge badge-pill badge-".$span_style[4]."'>".$val->player.":".$val->total_fact."</span>
-														";
-													}else{
-														echo "
-														<span class='badge badge-pill badge-".$span_style[5]."'>".$val->player.":".$val->total_fact."</span>
-														";
 
-													}
-													
-													// $game_player_res[$key] = isset($game_player_res[$key])?$game_player_res[$key]." ".$val->player." : $".$val->total_fact:$val->player.": $".$val->total_fact;
-												}
-												
-												?>
-												
-												
-											</td>
-											<td class="tdtxt">
-											<?php 
-											$duration = $value/3600;
-											if ($duration >= 1) {
-												$duration = round(($value/3600),1)." H";
-											}else{
-												$duration = round(($value/60),1)." Min";
-											}
-											echo $duration;
-
-											?></td>
-										</tr>
-										
-										
-								<?php endforeach?>
-							<?php endif ?>
-						</tbody>
-		        	</table>
-			    </div>
-	        </div>
-    	</div>
-    	
-	</div>
-	<div class="content">
-		<div class="col text-center">
-			&nbsp;
-		</div>
-		
-	</div>
-	
-</body>
-
-
-</html>
+<?php
+require_once('kog_footer.php');
+?>
