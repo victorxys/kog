@@ -1,7 +1,7 @@
 <?php
 date_default_timezone_set('Asia/Shanghai');
 require_once('functions.php');
-
+$page_title = "Big Date";
 // region PHP Data Logic
 $_REQUEST['type'] = isset($_REQUEST['type']) ? $_REQUEST['type'] : "total";
 $uid = isset($_REQUEST['uid']) ? $_REQUEST['uid'] : null;
