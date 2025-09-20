@@ -35,3 +35,13 @@ wp-config-local.php
 .env
 
 *(1)*.*
+
+
+# 数据库数据目录
+db_data/
+
+# Node.js 依赖目录
+node_modules/
+
+# 其他可能的目录，比如用户上传的文件
+uploads/
