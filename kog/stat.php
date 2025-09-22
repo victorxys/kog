@@ -191,14 +191,6 @@ switch ($_REQUEST['type']) {
                 }
             }
         }
-            echo "<pre>";
-            echo "KILL rank";
-            var_dump($kill_rank);
-            var_dump($killed_by);
-            var_dump($killed);
-            var_dump($kill_rank_player_json);
-            var_dump($kill_graph);
-            exit;
         break;
     case 'lucky':
         $lucky_info = get_lucky_info($start_time, $game_memo);
