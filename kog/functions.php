@@ -731,6 +731,7 @@ function get_kill_info($game_memo=null,$start_time=null, $end_time=null, $game_t
 	if(!empty($game_type)){
 		$sql = $sql.' and g.game_type like '."'".$game_type."'";
 	}
+	echo $sql;
 	$kill_info 	= 	$wpdb->get_results($sql);
 	$kill_info_conut = array();
 	if (is_array($kill_info)) {
@@ -811,6 +812,7 @@ function get_player_total_income_stat($game_memo=null,$start_time=null, $end_tim
 		$sql = $sql.' and g.game_type like '."'".$game_type."'";
 	}
 	$res 		= 	$wpdb->get_results($sql);
+	echo $sql;
 
 	$monthly_income = array();
 	if (!empty($res)) {
