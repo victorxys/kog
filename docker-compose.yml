@@ -40,20 +40,28 @@ services:
     volumes:
       - db_data:/var/lib/mysql
       - ./docker/mysql_init:/docker-entrypoint-initdb.d
-    ports:
-      - "3307:3306"
 
   phpmyadmin:
     image: phpmyadmin:5.2
     container_name: kog-phpmyadmin
     restart: always
-    ports:
-      - "8081:80"
     environment:
       PMA_HOST: db
       PMA_PORT: 3306
     depends_on:
       - db
+    networks:
+      - default
+      - tesla_default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=tesla_default"
+      - "traefik.http.routers.pma-https.rule=Host(`pma.allin.victorxys.top`)"
+      - "traefik.http.routers.pma-https.entrypoints=websecure"
+      - "traefik.http.routers.pma-https.tls=true"
+      - "traefik.http.routers.pma-https.tls.certresolver=tmhttpchallenge"
+      - "traefik.http.routers.pma-https.service=pma-service"
+      - "traefik.http.services.pma-service.loadbalancer.server.port=80"
 
 volumes:
   db_data:
