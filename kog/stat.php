@@ -111,7 +111,6 @@ switch ($_REQUEST['type']) {
         $kill_info = $kill_info_data['killed'] ?? [];
         $killed_by_tem = [];
         $kill_graph = [];
-        die;
         if (is_array($kill_rank) && is_array($kill_info_killed_by)) {
             $i = 0;
             foreach ($kill_rank as $key => $value) {
