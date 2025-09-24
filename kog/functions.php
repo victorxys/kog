@@ -23,10 +23,10 @@ function test(){
 }
 
 // 不同域名进来用不同的库，是不同的玩家
-global $wpdb;
-if ($_SERVER['SERVER_NAME'] == "dezhou.xys.one") {
-	$wpdb->prefix  = 'dezhou_';
-}
+// global $wpdb;
+// if ($_SERVER['SERVER_NAME'] == "dezhou.xys.one") {
+// 	$wpdb->prefix  = 'dezhou_';
+// }
 // 本地调试用
 // $wpdb->prefix  = 'dezhou_';
 
