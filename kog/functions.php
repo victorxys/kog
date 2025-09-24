@@ -2582,5 +2582,35 @@ function erp_html_form_help( $value = '' ) {
 	}
 }
 
+function send_telegram_message($message) {
+	$bot_token = '5174575036:AAEwt_eSARtn3rJl6n1Vg5DO5Z0lLZQ1msU"'; // 替换成你的 Bot Token
+	$chat_id = '-1001681233477';     // 替换成你的 Chat ID
+
+	// 避免在没有 token 或 chat_id 时执行
+	if (empty($bot_token) || empty($chat_id) || $bot_token == 'YOUR_BOT_TOKEN') {
+		error_log("Telegram Bot Token or Chat ID is not configured.");
+		return false;
+	}
+
+	$url = "https://api.telegram.org/bot{$bot_token}/sendMessage";
+	$data = ['chat_id' => $chat_id, 'text' => $message];
+
+	$options = [
+		'http' => [
+			'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+			'method'  => 'POST',
+			'content' => http_build_query($data),
+			'timeout' => 10 // 设置10秒超时
+		],
+	];
+	$context  = stream_context_create($options);
+	$result = @file_get_contents($url, false, $context); // 使用@抑制潜在的warning
+
+	if ($result === false) {
+		error_log("Failed to send Telegram message.");
+		return false;
+	}
+	return true;
+}
 
 ?>	

@@ -21,6 +21,27 @@ $players_json = json_encode($player_name_array);
 
 if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'creat_game') {
     if($gid = creat_game()){
+        // 安排一个一小时后的涨盲通知
+        global $wpdb;
+        $table_name = 'scheduled_notifications'; // 直接用表名，wpdb 会处理前缀（如果设置了）
+        $execute_at_time = date('Y-m-d H:i:s', time() + 3600);
+        $message_to_send = "牌局 GID-{$gid}: 即将涨盲，请做好准备！";
+
+        $wpdb->insert(
+            $table_name,
+            [
+                'game_id'      => $gid,
+                'message'      => $message_to_send,
+                'execute_at'   => $execute_at_time,
+                'status'       => 'pending',
+            ],
+            [
+                '%d', // game_id
+                '%s', // message
+                '%s', // execute_at
+                '%s', // status
+            ]
+        );
         $url = "kog_detail.php?page_name=Have Fun !&gid=".$gid;
         $swal_script = "
 			<script type=\"text/javascript\">
