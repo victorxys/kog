@@ -25,7 +25,7 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'creat_game') {
         global $wpdb;
         $table_name = 'scheduled_notifications'; // 直接用表名，wpdb 会处理前缀（如果设置了）
         $execute_at_time = date('Y-m-d H:i:s', time() + 3600);
-        $message_to_send = "牌局 GID-{$gid}: 即将涨盲，请做好准备！";
+        $message_to_send = "牌局 GID-{$gid}: 已进行一个小时！";
 
         $wpdb->insert(
             $table_name,
