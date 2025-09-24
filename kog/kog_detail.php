@@ -107,26 +107,21 @@ if (isset($_REQUEST['submit_type'])) {
 	}
 	switch ($_REQUEST['submit_type']) {
 		case 'Finish':
-            // This logic seems to have a bug with total_fact_sum, disabling for now.
-			// $total_fact_sum = intval(array_sum($_REQUEST['total_fact']));
-			// if ( $total_fact_sum != 0) {
-			// 	echo '
-			// 		<script type="text/javascript">
-			// 		document.addEventListener("DOMContentLoaded", function() {
-			// 			Swal.fire({
-			// 				title: "数值错误",
-			// 				text: "筹码结算不正确",
-			// 				icon: "error",
-			// 				timer: 2000,
-			// 				timerProgressBar: true,
-			// 				showConfirmButton: false
-			// 			});
-			// 		});
-			// 		</script>
-			// 	';
-			// 	break;
-			// }
-			// else{
+                // 取消这局游戏还未执行的涨盲通知
+                global $wpdb;
+                $table_name = 'scheduled_notifications';
+                $gid_to_cancel = $new_gid;
+
+                $wpdb->update(
+                    $table_name,
+                    ['status' => 'cancelled'], // 要更新的数据
+                    [
+                        'game_id' => $gid_to_cancel,
+                        'status'  => 'pending'
+                    ], // WHERE 条件
+                    ['%s'], // status 的数据类型
+                    ['%d', '%s'] // game_id 和 status 的数据类型
+                );
 				$update = array(
 					'status' 	=>	'2',
 					'end_time' 	=>	time(),
@@ -151,6 +146,27 @@ if (isset($_REQUEST['submit_type'])) {
 				$url 	=	 "stat.php?type=total&y=".$this_year."&md=".$game_group;
 				if($if_clone == 1){
 					$new_gid = clone_game($_REQUEST['gid']);
+                    // 安排一个一小时后的涨盲通知
+                    global $wpdb;
+                    $table_name = 'scheduled_notifications'; // 直接用表名，wpdb 会处理前缀（如果设置了）
+                    $execute_at_time = date('Y-m-d H:i:s', time() + 3600);
+                    $message_to_send = "牌局 GID-{$new_gid}: 即将涨盲，请做好准备！";
+
+                    $wpdb->insert(
+                        $table_name,
+                        [
+                            'game_id'      => $new_gid,
+                            'message'      => $message_to_send,
+                            'execute_at'   => $execute_at_time,
+                            'status'       => 'pending',
+                        ],
+                        [
+                            '%d', // game_id
+                            '%s', // message
+                            '%s', // execute_at
+                            '%s', // status
+                        ]
+                    );
 					$url 	=	 "kog_detail.php?page_name=Have Fun !&gid=".$new_gid;
 				}
 
@@ -188,6 +204,21 @@ if (isset($_REQUEST['submit_type'])) {
                 </script>
                 ';
             }else{
+                // 取消这局游戏还未执行的涨盲通知
+                global $wpdb;
+                $table_name = 'scheduled_notifications';
+                $gid_to_cancel = $_REQUEST['gid'];
+
+                $wpdb->update(
+                    $table_name,
+                    ['status' => 'cancelled'], // 要更新的数据
+                    [
+                        'game_id' => $gid_to_cancel,
+                        'status'  => 'pending'
+                    ], // WHERE 条件
+                    ['%s'], // status 的数据类型
+                    ['%d', '%s'] // game_id 和 status 的数据类型
+                );
                 $update = array(
                     'status' 	=>	'0',
                     'end_time' 	=>	time(),
@@ -218,6 +249,27 @@ if (isset($_REQUEST['submit_type'])) {
 		    break;
 		case 'clone':
             $new_gid = clone_game($_REQUEST['gid']);
+            // 安排一个一小时后的涨盲通知
+            global $wpdb;
+            $table_name = 'scheduled_notifications'; // 直接用表名，wpdb 会处理前缀（如果设置了）
+            $execute_at_time = date('Y-m-d H:i:s', time() + 3600);
+            $message_to_send = "牌局 GID-{$new_gid}: 即将涨盲，请做好准备！";
+
+            $wpdb->insert(
+                $table_name,
+                [
+                    'game_id'      => $new_gid,
+                    'message'      => $message_to_send,
+                    'execute_at'   => $execute_at_time,
+                    'status'       => 'pending',
+                ],
+                [
+                    '%d', // game_id
+                    '%s', // message
+                    '%s', // execute_at
+                    '%s', // status
+                ]
+            );
             $url = "kog_detail.php?page_name=Have Fun !&gid=".$new_gid;
             echo '
                 <script type="text/javascript">
