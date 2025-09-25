@@ -1,6 +1,8 @@
 <?php
 // 加载 WordPress 环境，这是让 $wpdb 可用的关键
 // __DIR__ 是当前脚本所在目录 (kog), 所以我们需要回到上一层目录
+// 强制设置当前脚本的默认时区
+date_default_timezone_set('Asia/Shanghai');
 require_once(__DIR__ . '/../wp-load.php');
 require_once('functions.php');
 
@@ -14,7 +16,7 @@ $query = $wpdb->prepare(
     "SELECT * FROM {$table_name} WHERE execute_at <= %s AND status = 'pending'",
     current_time('mysql')
 );
-// echo $query;
+echo $query;
 $tasks_to_process = $wpdb->get_results($query);
 // var_dump($tasks_to_process);
 if (!empty($tasks_to_process)) {
