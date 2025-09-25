@@ -10,11 +10,13 @@ require_once('functions.php');
 global $wpdb;
 $table_name = 'scheduled_notifications';
 
+$now_local = date('Y-m-d H:i:s');
+
 // 1. 查找并锁定到期的任务
 // 使用 $wpdb->prepare 来防止SQL注入
 $query = $wpdb->prepare(
     "SELECT * FROM {$table_name} WHERE execute_at <= %s AND status = 'pending'",
-    current_time('mysql')
+    $now_local
 );
 echo $query;
 $tasks_to_process = $wpdb->get_results($query);
@@ -24,7 +26,7 @@ if (!empty($tasks_to_process)) {
         // 先将任务标记为 'processing'，防止重复执行
         $wpdb->update(
             $table_name,
-            ['status' => 'processing', 'processed_at' => current_time('mysql')],
+            ['status' => 'processing', 'processed_at' => date('Y-m-d H:i:s')],
             ['id' => $task->id]
         );
 
@@ -45,7 +47,7 @@ if (!empty($tasks_to_process)) {
     }
 }
 
-echo "Worker finished at " . current_time('mysql') . "\n";
+echo "Worker finished at " . date('Y-m-d H:i:s') . "\n";
 
 // 确保 functions.php 里的 send_telegram_message 函数存在
 // 如果 worker 无法自动加载 functions.php，你可能需要在这里也 require_once(__DIR__ . '/functions.php');
