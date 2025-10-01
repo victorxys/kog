@@ -117,12 +117,12 @@ $current_page = basename($_SERVER['PHP_SELF']);
   <main class="main-content position-relative border-radius-lg ">
     <!-- Navbar -->
     <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl " id="navbarBlur" data-scroll="false">
-      <div class="container-fluid py-1 px-3">
+      <div class="container-fluid py-1 px-3 d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center">
           <h6 class="font-weight-bolder text-white mb-0"><?php echo isset($page_title) ? $page_title : 'Dashboard'; ?></h6>
           <a class="btn btn-primary btn-sm ms-3 mb-0" href="kog.php" type="button">New Game</a>
         </div>
-        <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
+        <div class="collapse navbar-collapse me-md-0 me-sm-4" id="navbar">
           <div class="ms-md-auto pe-md-3 d-flex align-items-center">
           </div>
           <ul class="navbar-nav  justify-content-end">

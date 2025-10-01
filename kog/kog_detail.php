@@ -7,7 +7,7 @@ if (!$gid) {
     die("Game ID is required.");
 }
 
-$page_title = "游戏详情 GID-" . $gid;
+$page_title = "Game Details";
 
 // region PHP Logic
 $res = get_player();
@@ -110,7 +110,7 @@ if (isset($_REQUEST['submit_type'])) {
                 // 取消这局游戏还未执行的涨盲通知
                 global $wpdb;
                 $table_name = 'scheduled_notifications';
-                $gid_to_cancel = $new_gid;
+                $gid_to_cancel =  $_REQUEST['gid'];
 
                 $wpdb->update(
                     $table_name,
@@ -419,6 +419,51 @@ require_once "kog_header.php";
 ?>
 
 <div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">游戏详情</h3>
+                </div>
+                <div class="card-body p-3">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item ps-0"><b>GID:</b> <span class="badge bg-dark"><?php echo $gid; ?></span></li>
+                        <li class="list-group-item ps-0"><b>开始时间:</b> <?php echo date('Y-m-d H:i', $game->start_time); ?></li>
+                        <li class="list-group-item ps-0"><b>所属日期分子:</b> <?php echo $game->memo; ?></li>
+                        <li class="list-group-item ps-0"><b>状态:</b> <?php echo ($game->status == '2') ? '<span class="badge badge-sm bg-gradient-secondary">已结束</span>' : '<span class="badge badge-sm bg-gradient-success">进行中</span>'; ?></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">今日战况汇总
+                        <small class="text-muted font-weight-normal ps-1">(共计 <?php echo isset($game_memo_list['memo_total']['count_games'][$game_memo]) ? $game_memo_list['memo_total']['count_games'][$game_memo] : 0; ?> 场)</small>
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <?php if (isset($game_memo_list['memo_total']['player_info'][$game_memo])): ?>
+                        <?php foreach($game_memo_list['memo_total']['player_info'][$game_memo] as $key => $value): ?>
+                            <?php
+                                $badge_class = 'bg-secondary';
+                                if ($value->total_fact > 0) {
+                                    $badge_class = 'bg-success';
+                                } elseif ($value->total_fact < 0) {
+                                    $badge_class = 'bg-danger';
+                                }
+                            ?>
+                            <span class="badge <?php echo $badge_class; ?> me-1 mb-1"><?php _e($value->player)?>: ￥<?php _e($value->total_fact)?></span>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <p class="mb-0">尚无数据。</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="row">
         <div class="col-12 mb-4">
             <!-- Seat List Card -->
