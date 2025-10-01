@@ -2,6 +2,14 @@
 date_default_timezone_set('Asia/Shanghai');
 require_once('functions.php');
 $page_title = "Big Date";
+
+$game = get_game("last");
+$game_group = !empty($game) ? $game->memo : null;
+
+$is_active_all = (isset($_REQUEST['y']) && $_REQUEST['y'] == '2018' &&isset($_REQUEST['end_time']));
+$is_active_last_game = isset($_REQUEST['md']);
+$is_active_this_year = !$is_active_all && !$is_active_last_game && (!isset($_REQUEST['y']) || $_REQUEST['y'] == date('Y'));
+
 // region PHP Data Logic
 $_REQUEST['type'] = isset($_REQUEST['type']) ? $_REQUEST['type'] : "total";
 $uid = isset($_REQUEST['uid']) ? $_REQUEST['uid'] : null;
@@ -268,23 +276,40 @@ require_once("kog_header.php");
         <div class="col-12">
             <div class="card mb-4">
                 <div class="card-body">
-                    <form class="row align-items-center" method="get">
+                    <form method="get">
                         <input type="hidden" name="type" value="<?php echo htmlspecialchars($_REQUEST['type']); ?>">
-                        <div class="col-auto">
-                            <div class="horizontal-scroll-wrapper">
-                                <a href="?type=total&y=<?php _e($this_year) ?>" class="btn btn-sm <?php echo $_REQUEST['type'] == 'total' ? 'btn-primary' : 'btn-outline-primary'; ?>">Overview</a>
-                                <a href="?type=detail&y=<?php _e($this_year) ?>" class="btn btn-sm <?php echo $_REQUEST['type'] == 'detail' ? 'btn-primary' : 'btn-outline-primary'; ?>">Details</a>
-                                <a href="?type=killrank&y=<?php _e($this_year) ?>" class="btn btn-sm <?php echo $_REQUEST['type'] == 'killrank' ? 'btn-primary' : 'btn-outline-primary'; ?>">Killer</a>
-                                <a href="?type=lucky&y=<?php _e($this_year) ?>" class="btn btn-sm <?php echo $_REQUEST['type'] == 'lucky' ? 'btn-primary' : 'btn-outline-primary'; ?>">Lucky</a>
+                        <div class="d-sm-flex flex-wrap justify-content-between align-items-center">
+                            <!-- View Type Buttons -->
+                            <div class="mb-2 mb-sm-0">
+                                <div class="horizontal-scroll-wrapper">
+                                    <a href="?type=total&y=<?php _e($this_year) ?>" class="btn btn-sm <?php echo $_REQUEST['type'] == 'total' ? 'btn-primary' : 'btn-outline-primary'; ?>">Overview</a>
+                                    <a href="?type=detail&y=<?php _e($this_year) ?>" class="btn btn-sm <?php echo $_REQUEST['type'] == 'detail' ? 'btn-primary' : 'btn-outline-primary'; ?>">Details</a>
+                                    <a href="?type=killrank&y=<?php _e($this_year) ?>" class="btn btn-sm <?php echo $_REQUEST['type'] == 'killrank' ? 'btn-primary' : 'btn-outline-primary'; ?>">Killer</a>
+                                    <a href="?type=lucky&y=<?php _e($this_year) ?>" class="btn btn-sm <?php echo $_REQUEST['type'] == 'lucky' ? 'btn-primary' : 'btn-outline-primary'; ?>">Lucky</a>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-2">
-                            <select class="form-control form-control-sm" name="y" onchange="this.form.submit()">
-                                <option value="">Select Year</option>
-                                <?php foreach ($game_list as $year_item) : ?>
-                                    <option value="<?php echo $year_item; ?>" <?php echo ($this_year == $year_item) ? 'selected' : ''; ?>><?php echo $year_item; ?></option>
-                                <?php endforeach; ?>
-                            </select>
+
+                            <!-- Filters Group -->
+                            <div class="col-auto">
+                                <div class="d-sm-flex flex-wrap align-items-center">
+                                    <div class="me-sm-3 mb-2 mb-sm-0">
+                                        <select class="form-control form-control-sm" name="y" onchange="this.form.submit()">
+                                            <option value="">Select Year</option>
+                                            <?php foreach ($game_list as $year_item) : ?>
+                                                <option value="<?php echo $year_item; ?>" <?php echo ($this_year == $year_item) ? 'selected' : ''; ?>><?php echo $year_item; ?></option>                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <div class="mb-2 mb-sm-0">
+                                        <div class="btn-group" role="group">
+                                            <a href="?type=<?php echo htmlspecialchars($_REQUEST['type']); ?>&y=2018&end_time=<?php echo date('Ymd'); ?>" class="btn btn-sm <?php echo $is_active_all ? 'btn-primary' : 'btn-outline-primary'; ?>">全部</a>
+                                            <a href="?type=<?php echo htmlspecialchars($_REQUEST['type']); ?>&y=<?php echo date('Y'); ?>"class="btn btn-sm <?php echo $is_active_this_year ? 'btn-primary' : 'btn-outline-primary'; ?>">今年</a>
+                                            <?php if ($game_group): ?>
+                                                <a href="?type=<?php echo htmlspecialchars($_REQUEST['type']); ?>&md=<?php echo $game_group;?>" class="btn btn-sm <?php echo $is_active_last_game ? 'btn-primary': 'btn-outline-primary'; ?>">最近一场</a>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
