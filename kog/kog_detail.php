@@ -702,8 +702,7 @@ require_once "kog_header.php";
                                 <div class="col">
                                      <h6 class="text-xxs text-uppercase">Final</h6>
                                      <p class="text-sm font-weight-bold mb-0 <?php echo $total_should >= 0 ? 'text-success' : 'text-danger'; ?>">
-                                        ￥<?php _e(round($total_should, 2))
-?>
+                                        ￥<?php _e(round($total_should, 2))?>
                                      </p>
                                 </div>
                             </div>
@@ -717,11 +716,11 @@ require_once "kog_header.php";
                                     <?php foreach($should_get[$key] as $k => $v):
                                         if($v['get'] != 0):
                                             ?><?php _e($player_name[$k]."(".$v['get'].")")?><?php 
-                                            $get_money .= $player_name[$k]."(".$v['get'].")";
+                                            $get_money .= $player_name[$k].": ¥".$v['get']." 元";
                                         ?><?php endif?><?php 
                                     endforeach?>
                                 </div>
-                                <?php $text_tel .= "#".$val['rank'].":". $player_name[$key]."->". $get_money."\n"; 
+                                <?php $text_tel .= "#".$val['rank'].":". $player_name[$key]." 付给 ". $get_money."\n"; 
                             endif?>
 
                             <div class="form-group mt-3 mb-0">
@@ -742,14 +741,54 @@ require_once "kog_header.php";
                 </div>
             <?php endforeach; ?>
         </div>
-        
+        <div class="row mb-4">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h3 class="mb-0">现金支付</h3>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <pre class="mb-0 bg-dark text-white p-3 border-radius-lg flex-grow-1"><?php echo htmlspecialchars($text_tel);?></pre>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h3 class="mb-0">筹码退还</h3>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <pre class="mb-0 bg-dark text-white p-3 border-radius-lg flex-grow-1"><?php
+                            $chip_refund_text = "====== 筹码退还关系 ======\n";
+                            $has_refund = false;
+                            if (isset($should_get) && !empty($should_get)) {
+                                foreach($should_get as $loser_id => $winners) {
+                                    foreach($winners as $winner_id =>$payment) {
+                                        if ($payment['get'] > 0) {
+                                            $has_refund = true;
+                                            $chip_amount = $payment['get'] * 10;
+                                            $chip_refund_text .= $player_name[$winner_id] . " 退还 " . $player_name[$loser_id] . ": ".$chip_amount . " 筹码\n";
+                                        }
+                                    }
+                                }
+                            }
+                            if (!$has_refund) {
+                                $chip_refund_text .= "无需退还筹码。\n";
+                            }
+                            echo htmlspecialchars($chip_refund_text);
+                        ?></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> <!-- 这是 foreach 循环外面那个 class="row" 的结束标签 -->
         <div class="row-full-bottom">
             <?php if ($game->status == 1) : ?>
                 <input type="hidden" name="action" value="finish">
                 <input type="hidden" name="gid" value="<?php _e($_REQUEST['gid']) ?>">
                 <div class="text-center">
-                    <button type="submit" class="btn btn-secondary" name="submit_type" value="finish&clone">Finish & Clone</button>
-                    <button type="submit" class="btn btn-primary" name="submit_type" value="Finish">Finish</button>
+                    <button type="submit" class="btn btn-primary" name="submit_type" value="finish&clone"> Continue</button>
+                    <button type="submit" class="btn btn-secondary" name="submit_type" value="Finish">Finish</button>
                 </div>
             <?php elseif ($game->status == 2) : ?>
                 <div class="text-center">
