@@ -422,8 +422,17 @@ require_once "kog_header.php";
     <div class="row">
         <div class="col-12 mb-4">
             <div class="card">
-                <div class="card-header">
+               
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="mb-0">游戏详情</h3>
+                    <?php if ($game->status == 1) : ?>
+                        <form method="post" onsubmit="return confirm('你确定要删除这场游戏吗？这会清除所有相关数据！');" class="mb-0">
+                            <input type="hidden" name="gid" value="<?php echo $_REQUEST['gid']; ?>">
+                            <button type="submit" name="submit_type" value="Delete" class="btn btn-link text-danger p-0">
+                                <i class="fa fa-trash fa-lg"></i>
+                            </button>
+                        </form>
+                    <?php endif; ?>
                 </div>
                 <div class="card-body p-3">
                     <ul class="list-group list-group-flush">
@@ -611,16 +620,6 @@ require_once "kog_header.php";
                     </div>
                 </div>
             </form>
-             <?php if ($game->status == 1) : ?>
-                <form method="post" onsubmit="return confirm('你确定要删除这场游戏吗？这会清除所有相关数据！');">
-                    <input type="hidden" name="gid" value="<?php echo $_REQUEST['gid']; ?>">
-                    <div class="row mt-3">
-                        <div class="col-md-12">
-                            <button type="submit" class="btn btn-danger w-100" name="submit_type" value="Delete">Delete This Game</button>
-                        </div>
-                    </div>
-                </form>
-            <?php endif; ?>
         </div>
     </div>
 
