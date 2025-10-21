@@ -1,5 +1,13 @@
 <?php
 $current_page = basename($_SERVER['PHP_SELF']);
+
+// 定义不需要登录即可访问的公共页面数组
+$public_pages = ['stat.php'];
+
+// 如果当前页面不在公共页面数组中，并且用户未登录，则重定向到登录页面
+// if (!in_array($current_page, $public_pages) && !is_user_logged_in()) {
+//     auth_redirect();
+// }
 ?>
 <!--
 =========================================================

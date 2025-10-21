@@ -4761,7 +4761,7 @@ function map_deep( $value, $callback ) {
  */
 function wp_parse_str( $string, &$array ) {
 	parse_str( $string, $array );
-	if ( get_magic_quotes_gpc() ) {
+	if ( @get_magic_quotes_gpc() ) {
 		$array = stripslashes_deep( $array );
 	}
 	/**
