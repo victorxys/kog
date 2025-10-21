@@ -47,3 +47,5 @@ node_modules/
 uploads/
 
 gitpull.sh
+
+docker-compose-prod.yml
