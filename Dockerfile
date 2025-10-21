@@ -1,11 +1,21 @@
-# Use an official PHP image with Apache.
-FROM php:7.4-apache
+# Use an official PHP image with Apache, locking to the amd64 platform.
+FROM --platform=linux/amd64 php:7.4-apache
 
-# Install necessary PHP extensions for WordPress.
-RUN docker-php-ext-install mysqli && docker-php-ext-enable mysqli
-RUN apt-get update && apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev \
+# Install necessary PHP extensions, htpasswd utility, and other tools.
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    apache2-utils \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd
+    && docker-php-ext-install mysqli gd \
+    && docker-php-ext-enable mysqli
+
+# Create the htpasswd file for basic authentication inside the image.
+RUN htpasswd -c -b /etc/apache2/.htpasswd allin allin
+
+# Copy the custom Apache configuration into the image.
+COPY apache.conf /etc/apache2/sites-available/000-default.conf
 
 # Enable Apache's mod_rewrite for WordPress permalinks.
 RUN a2enmod rewrite
