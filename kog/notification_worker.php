@@ -30,12 +30,15 @@ if (!empty($tasks_to_process)) {
             ['id' => $task->id]
         );
 
-        // 2. 执行任务
-        $chat_id = "-1001681233477";
-        
-        $is_success =  apiRequestJson("sendMessage", array('chat_id' => $chat_id, "text" => $task->message));
-        
-        // $is_success = send_telegram_message($task->message);
+        // 2. 执行任务：在发送通知前，检查游戏状态
+        $game = get_game($task->game_id);
+        $is_success = true; // 默认为 true，以便在游戏结束后直接将任务标记为 completed
+
+        if ($game && $game->status == 1) {
+            // 游戏仍在进行中，发送通知
+            $chat_id = "-1001681233477";
+            $is_success = apiRequestJson("sendMessage", array('chat_id' => $chat_id, "text" => $task->message));
+        }
 
         // 3. 更新最终状态
         $new_status = $is_success ? 'completed' : 'failed';

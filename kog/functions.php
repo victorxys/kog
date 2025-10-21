@@ -2612,5 +2612,3 @@ function send_telegram_message($message) {
 	}
 	return true;
 }
-
-?>	

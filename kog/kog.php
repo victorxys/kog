@@ -48,7 +48,7 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'creat_game') {
                 document.addEventListener(\"DOMContentLoaded\", function() {
 				Swal.fire({
 					title: \"Success\",
-					text: \"Ok Let\'s All\",
+					text: \"Ok Let's All\",
 					icon: \"success\",
 					timer: 2000,
 				timerProgressBar: true,
@@ -192,10 +192,10 @@ $(document).ready(function() {
             }
 
             const fieldHtml = `
-                <div class=\"form-group row\">
-                    <label class=\"col-md-2 col-form-label form-control-label\">${i}号位</label>
-                    <div class=\"col-md-10\">
-                        <select name=\"position[${i}]\" class=\"form-control player-select\" required>
+                <div class="form-group row">
+                    <label class="col-md-2 col-form-label form-control-label">${i}号位</label>
+                    <div class="col-md-10">
+                        <select name="position[${i}]" class="form-control player-select" required>
                             ${optionsHtml}
                         </select>
                     </div>
