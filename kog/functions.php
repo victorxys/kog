@@ -5,6 +5,23 @@
 date_default_timezone_set('Asia/Shanghai');//'Asia/Shanghai'   亚洲/上海
 define('PATH', dirname(dirname(__FILE__)).'/');
 
+// 加载 .env 环境变量
+$env_file = __DIR__ . '/.env';
+if (file_exists($env_file)) {
+    $lines = file($env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0) continue; // 跳过注释
+        if (strpos($line, '=') !== false) {
+            list($name, $value) = explode('=', $line, 2);
+            $name = trim($name);
+            $value = trim($value);
+            if (!empty($name)) {
+                putenv("$name=$value");
+                $_ENV[$name] = $value;
+            }
+        }
+    }
+}
 
 require_once(PATH . 'wp-blog-header.php'); 
 // require_once('telegram_webhook.php');
@@ -1816,10 +1833,8 @@ function creat_game(){
 }
 
 function send_message($tel_text=null){
-	$bot_key = "bot5174575036:AAEwt_eSARtn3rJl6n1Vg5DO5Z0lLZQ1msU";
-	$chat_id = "-1001681233477";
-	// 本地调试用
-	// $chat_id = "652145690";
+	$bot_key = "bot" . getenv('TELEGRAM_BOT_TOKEN');
+	$chat_id = getenv('TELEGRAM_CHAT_ID');
 	$tel_bot = "https://api.telegram.org/".$bot_key."/sendMessage?chat_id=".$chat_id."&text=";
 	$url = $tel_bot.$tel_text;
 	curl_file_get_contents($url);
@@ -1830,10 +1845,8 @@ function send_message($tel_text=null){
 function check_upgrade_by_time($host=null){
 	// 找到正在进行中的游戏
 	global $wpdb;
-	$bot_key = "bot5174575036:AAEwt_eSARtn3rJl6n1Vg5DO5Z0lLZQ1msU";
-	$chat_id = "-1001681233477";
-	// 本地调试用
-	// $chat_id = "652145690";
+	$bot_key = "bot" . getenv('TELEGRAM_BOT_TOKEN');
+	$chat_id = getenv('TELEGRAM_CHAT_ID');
 	$tel_bot = "https://api.telegram.org/".$bot_key."/sendMessage?chat_id=".$chat_id."&text=";
 	$ongoing = get_game_by_args(array("status" => 1));//只获取status = 1 的数据，既进行中的数据。
 
@@ -1981,17 +1994,8 @@ function check_upgrade_by_time($host=null){
 // telegram bot 相关函数
 ini_set('error_reporting', E_ALL);
 
-// file_get_contents("https://api.telegram.org/bot5174575036:AAEwt_eSARtn3rJl6n1Vg5DO5Z0lLZQ1msU/sendMessage?chat_id=-1001681233477&text=Hello world again!");
-
-// 设置 webhook
-// https://api.telegram.org/bot5174575036:AAEwt_eSARtn3rJl6n1Vg5DO5Z0lLZQ1msU/getWebhookInfo
-// https://api.telegram.org/bot5174575036:AAEwt_eSARtn3rJl6n1Vg5DO5Z0lLZQ1msU/getupdates
-// https://api.telegram.org/bot5174575036:AAEwt_eSARtn3rJl6n1Vg5DO5Z0lLZQ1msU/setWebhook?url=https://bot.xys.one/telegram_webhook.php
-// $bot_key = "bot5174575036:AAEwt_eSARtn3rJl6n1Vg5DO5Z0lLZQ1msU";
-
-// $chat_id = "-1001681233477";
 // $tel_bot = "https://api.telegram.org/".$bot_key."/sendMessage?chat_id=".$chat_id."&text=";
-define('BOT_TOKEN', '5174575036:AAEwt_eSARtn3rJl6n1Vg5DO5Z0lLZQ1msU');
+define('BOT_TOKEN', getenv('TELEGRAM_BOT_TOKEN') ?: '');
 define('API_URL', 'https://api.telegram.org/bot'.BOT_TOKEN.'/');
 
 // check_upgrade_by_time();
@@ -2041,7 +2045,7 @@ function exec_curl_request($handle) {
     $response = json_decode($response, true);
     error_log("Request has failed with error {$response['error_code']}: {$response['description']}\n");
     if ($http_code == 401) {
-      throw new Exception('Invalid access token provided');
+      error_log("Invalid access token provided - check TELEGRAM_BOT_TOKEN in .env file\n");
     }
     return false;
   } else {
@@ -2090,6 +2094,12 @@ function apiRequest($method, $parameters) {
 
 // 发送消息向Telegram_BOT
 function apiRequestJson($method, $parameters) {
+  // 检查 BOT_TOKEN 是否已配置
+  if (!defined('BOT_TOKEN') || empty(BOT_TOKEN)) {
+    error_log("Telegram BOT_TOKEN is not configured in .env file\n");
+    return false;
+  }
+
   if (!is_string($method)) {
     error_log("Method name must be a string\n");
     return false;
@@ -2583,12 +2593,12 @@ function erp_html_form_help( $value = '' ) {
 }
 
 function send_telegram_message($message) {
-	$bot_token = '5174575036:AAEwt_eSARtn3rJl6n1Vg5DO5Z0lLZQ1msU"'; // 替换成你的 Bot Token
-	$chat_id = '-1001681233477';     // 替换成你的 Chat ID
+	$bot_token = getenv('TELEGRAM_BOT_TOKEN');
+	$chat_id = getenv('TELEGRAM_CHAT_ID');
 
 	// 避免在没有 token 或 chat_id 时执行
-	if (empty($bot_token) || empty($chat_id) || $bot_token == 'YOUR_BOT_TOKEN') {
-		error_log("Telegram Bot Token or Chat ID is not configured.");
+	if (empty($bot_token) || empty($chat_id)) {
+		error_log("Telegram Bot Token or Chat ID is not configured in .env file.");
 		return false;
 	}
 

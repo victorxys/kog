@@ -799,7 +799,7 @@ require_once "kog_header.php";
     </form>
     <?php
         $text_tel .= "======END======";
-        $chat_id = "-1001681233477";
+        $chat_id = getenv('TELEGRAM_CHAT_ID');
         if (isset($_REQUEST['action']) && $_REQUEST['action'] == "ranking") {
             apiRequestJson("sendMessage", array('chat_id' => $chat_id, "text" => $text_tel));
         }

@@ -1,23 +1,37 @@
 <?php
 // require_once('functions.php');
 
+// 加载 .env 环境变量
+$env_file = dirname(__DIR__) . '/.env';
+if (file_exists($env_file)) {
+    $lines = file($env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0) continue;
+        if (strpos($line, '=') !== false) {
+            list($name, $value) = explode('=', $line, 2);
+            $name = trim($name);
+            $value = trim($value);
+            if (!empty($name)) {
+                putenv("$name=$value");
+                $_ENV[$name] = $value;
+            }
+        }
+    }
+}
+
 // 这个是 守护机器人，用来定时触发的
 // watcher_auto_bot
-file_get_contents("https://api.telegram.org/bot5174575036:AAEwt_eSARtn3rJl6n1Vg5DO5Z0lLZQ1msU/sendMessage?chat_id=-1001681233477&text=Hello world again!");
-define('BOT_TOKEN_2', '5122644514:AAGubGVAOAiwYkvqtF2-pKP2DCn4JXuHY5M');
+$bot_token = getenv('TELEGRAM_BOT_TOKEN');
+$chat_id = getenv('TELEGRAM_CHAT_ID');
+file_get_contents("https://api.telegram.org/bot{$bot_token}/sendMessage?chat_id={$chat_id}&text=Hello world again!");
+
+define('BOT_TOKEN_2', getenv('TELEGRAM_BOT_TOKEN_2') ?: '');
 define('API_URL_2', 'https://api.telegram.org/bot'.BOT_TOKEN_2.'/');
-define('WEBHOOK_URL_2', 'https://bot.xys.one/telegram_wtcher.php');
+define('WEBHOOK_URL_2', getenv('TELEGRAM_WEBHOOK_URL_2') ?: '');
 
 
 
 ini_set('error_reporting', E_ALL);
-
-// $chat_id = "-1001681233477";
-// $tel_bot = "https://api.telegram.org/".$bot_key."/sendMessage?chat_id=".$chat_id."&text=";
-
-
-
-
 
 
 function apiRequestWebhook($method, $parameters) {
