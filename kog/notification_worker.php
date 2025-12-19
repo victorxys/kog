@@ -4,7 +4,7 @@
 // 强制设置当前脚本的默认时区
 date_default_timezone_set('Asia/Shanghai');
 require_once(__DIR__ . '/../wp-load.php');
-require_once('functions.php');
+require_once('functions.php'); // functions.php 会加载 .env 环境变量
 
 // 现在 $wpdb 应该可用了
 global $wpdb;
@@ -36,7 +36,7 @@ if (!empty($tasks_to_process)) {
 
         if ($game && $game->status == 1) {
             // 游戏仍在进行中，发送通知
-            $chat_id = "-1001681233477";
+            $chat_id = getenv('TELEGRAM_CHAT_ID');
             $is_success = apiRequestJson("sendMessage", array('chat_id' => $chat_id, "text" => $task->message));
         }
 
