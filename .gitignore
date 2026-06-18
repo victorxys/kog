@@ -51,3 +51,5 @@ gitpull.sh
 docker-compose-prod.yml
 
 docs/
+
+kog/scripts/create_local_backup.sh
