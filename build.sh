@@ -36,25 +36,21 @@ fi
 
 echo "🚀 即将构建的新版本为: ${NEW_VERSION}"
 
-# --- 3. 构建、标记并推送镜像 (使用旧版构建器) ---
-echo "🛠️ 正在为平台 [${PLATFORM}] 构建镜像 (使用旧版构建器)..."
+# --- 3. 构建、标记并加载到本地镜像库 ---
+echo "🛠️ 正在为平台 [${PLATFORM}] 构建镜像..."
 echo "   镜像: ${IMAGE_NAME}:${NEW_VERSION}"
 
-# 设置 DOCKER_BUILDKIT=0 环境变量以禁用 BuildKit 并构建
-DOCKER_BUILDKIT=0 docker build \
+# 先加载到本地镜像库，再单独 push。这样网络中断时只需要重试 docker push。
+docker buildx build \
   --platform "$PLATFORM" \
   -t "${IMAGE_NAME}:${NEW_VERSION}" \
+  -t "${IMAGE_NAME}:latest" \
+  --load \
   .
 
-echo "🏷️ 正在标记 'latest' 标签..."
-docker tag "${IMAGE_NAME}:${NEW_VERSION}" "${IMAGE_NAME}:latest"
-
-echo "🚀 正在推送版本标签 (${NEW_VERSION}) 到 Docker Hub..."
+echo "📤 正在推送镜像到 Docker Hub..."
 docker push "${IMAGE_NAME}:${NEW_VERSION}"
-
-echo "🚀 正在推送 'latest' 标签到 Docker Hub..."
 docker push "${IMAGE_NAME}:latest"
-
 
 
 echo ""

@@ -1,0 +1,14 @@
+.git
+.github
+.DS_Store
+
+docs
+DB
+db-bk
+
+node_modules
+kog/node_modules
+
+*.log
+docker-compose*.yml
+build.sh

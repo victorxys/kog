@@ -49,3 +49,5 @@ uploads/
 gitpull.sh
 
 docker-compose-prod.yml
+
+docs/
